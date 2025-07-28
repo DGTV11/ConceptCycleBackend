@@ -3,7 +3,7 @@
 ## Install
 1. Clone repo
 ```bash
-git clone git@github.com:DGTV11/AIStudyBuddyBackend.git'
+git clone git@github.com:DGTV11/AIStudyBuddyBackend.git
 ```
 
 OR 
