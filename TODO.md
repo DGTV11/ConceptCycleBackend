@@ -46,3 +46,5 @@ Step 4: User may download the cheat sheet as a markdown file or pdf and the mind
 - (OPTIONAL because LAZY) implement authentication (https://medium.com/@wangarraakoth/user-authentication-in-fastapi-using-python-3b51af11b38d)
 
 4. Make suitable frontend (app for prototype development TBD)
+
+5. DOCKERISE (so I can self-host on my rpi)
