@@ -6,7 +6,6 @@ User gives the platform their notes (markdown/txt, pdf, audio(?), image, pptx, p
 Step 1: input notes in the form of text/md files, audio (transcription), images (to be converted into text using VLMs), pdfs and pptx files
 
 Step 2: LLM takes all the notes and condenses them into topics, subtopics and then distinct byte-sized concept documents (objects with title and content fields + SRS parameters)
-
 ```
 
 ## Adaptive quiz mode:
