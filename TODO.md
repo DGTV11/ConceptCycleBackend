@@ -22,7 +22,7 @@ Step 4: LLM grades quiz and update tested concepts’ SRS parameters based on Le
 Step 5: Upon subsequent user requests, LLM generates quiz based on due (based on SRS algorithm) and unseen concept documents (one question per concept) (limit number of new concepts and total no of concepts in a quiz) and tests user with questions based on these concepts to promote active recall
 ```
 
-## Quick revision notes generator:
+## Quick revision notes generator (DO NOT DO DURING THIS TvP SP, DO AFTER PRESENTATION):
 
 User uses quick revision notes generator -> user chooses either cheat sheet or mindmap -> AI generates chosen type of notes
 
