@@ -42,7 +42,7 @@ Step 4: User may download the cheat sheet as a markdown file or pdf and the mind
 
 3. Make API using FastAPI and pocketflow (using stuff like ChromaDB and OpenAI)
 
-- design API interface **(DOING)**
+- design API interface **(DONE)**
 - design prompts and Flows **(TODO)**
 - (OPTIONAL because LAZY) implement authentication (https://medium.com/@wangarraakoth/user-authentication-in-fastapi-using-python-3b51af11b38d)
 
