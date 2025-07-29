@@ -18,6 +18,17 @@ pip install uv
 uv sync
 ```
 
+3. Add `.env` file to directory and configure
+```env
+LLM_API_BASE_URL=<fill me>
+LLM_API_KEY=<fill me>
+LLM_NAME=<fill me>
+VLM_API_BASE_URL=<fill me>
+VLM_API_KEY=<fill me>
+VLM_NAME=<fill me>
+CHUNK_MAX_TOKENS=<fill me>
+```
+
 3. Run server
 ```bash
 uv run main.py
