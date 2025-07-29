@@ -1,214 +1,124 @@
-# 📚 Study Platform REST API
+# 📚 Study Platform API Docs
 
-## **Base URL**
+Base URL: `http://localhost:5046`
+Version: `v1`
 
-```
-/api/v1
-```
-
----
-
-## **Step 1: Input Notes**
-
-### `POST /notes/upload`
-
-Upload notes in various formats.
-
-**Request**
-
-* `multipart/form-data`
-
-  * `file` (required) — txt, md, pdf, pptx, image, audio
-  * `metadata` (optional, JSON) — e.g., subject, tags
-
-**Response**
-
-```json
-{
-  "note_id": "uuid-123",
-  "status": "processing",
-  "message": "Notes uploaded successfully and queued for processing."
-}
-```
+Do note that example response data, if any are merely illustrative and may not reflect the API's true output
 
 ---
 
-## **Step 2: Process Notes into Concepts**
+## **Notes**
 
-### `POST /notes/:note_id/process`
+### `POST /notes`
 
-Convert notes into concept objects.
+Upload a new note.
 
-**Response**
-
-```json
-{
-  "concepts": [
-    {
-      "id": "c1",
-      "title": "Efflux Pump-mediated Resistance",
-      "content": "Mechanism where bacteria expel antibiotics...",
-      "srs": {
-        "interval": 0,
-        "ease_factor": 2.5,
-        "repetitions": 0,
-        "due_date": "2025-07-30T00:00:00Z"
-      }
-    },
-    {
-      "id": "c2",
-      "title": "Stages of Viral Infection: Attachment",
-      "content": "Virus attaches to host cell surface receptors...",
-      "srs": { ... }
-    }
-  ]
-}
-```
+* **Body**: `multipart/form-data` (file upload, optional metadata)
+* **Response**: `{ "note_id": "uuid", "status": "processing" }`
 
 ---
 
-## **Adaptive Quiz Mode**
+### `GET /notes`
 
-### `POST /quiz/start`
+List all uploaded notes.
 
-Generate quiz from due + new concepts.
-
-**Request**
-
-```json
-{
-  "limit": 10,
-  "mode": "mixed"  // "due_only", "new_only", "mixed"
-}
-```
-
-**Response**
-
-```json
-{
-  "quiz_id": "q-001",
-  "questions": [
-    {
-      "concept_id": "c1",
-      "question": "What mechanism allows bacteria to resist antibiotics by pumping them out?",
-      "type": "short_answer"
-    },
-    {
-      "concept_id": "c2",
-      "question": "What is the first stage of viral infection?",
-      "type": "mcq",
-      "options": ["Replication", "Attachment", "Maturation", "Release"]
-    }
-  ]
-}
-```
+* **Response**: `[ { "id": "uuid", "name": "string", "status": "processed|pending" } ]`
 
 ---
 
-### `POST /quiz/:quiz_id/submit`
+### `GET /notes/{note_id}`
 
-Submit answers and update SRS.
+Get a specific note by ID.
 
-**Request**
+* **Response**: `{ "id": "uuid", "content": "string", "status": "processed|pending" }`
+
+---
+
+### `DELETE /notes/{note_id}`
+
+Delete a note by ID.
+
+* **Response**: `{ "deleted": true }`
+
+---
+
+### `POST /notes/{note_id}/process`
+
+Process a note into concept documents.
+
+* **Response**: `{ "note_id": "uuid", "concepts_generated": int }`
+
+---
+
+## **Concepts**
+
+### `GET /concepts`
+
+List all concepts.
+
+* **Response**: `[ { "id": "c1", "title": "string", "content": "string", "srs": {...} } ]`
+
+---
+
+### `GET /concepts/{concept_id}`
+
+Get details of a concept.
+
+* **Response**: `{ "id": "c1", "title": "string", "content": "string", "srs": {...} }`
+
+---
+
+## **Quizzes**
+
+### `GET /quizzes`
+
+List all quizzes (past + active).
+
+* **Response**: `[ { "quiz_id": "q1", "created": "timestamp", "status": "active|completed" } ]`
+
+---
+
+### `POST /quizzes`
+
+Start a new quiz.
+
+* **Query params**:
+
+  * `limit`: int → number of questions
+  * `mode`: string → `"due_only" | "new_only" | "mixed"`
+* **Response**: `{ "quiz_id": "q1", "questions": [ { "concept_id": "c1", "question": "string" } ] }`
+
+---
+
+### `GET /quizzes/{quiz_id}`
+
+Get quiz by ID.
+
+* **Response**: `{ "quiz_id": "q1", "questions": [...], "status": "active|completed" }`
+
+---
+
+### `POST /quizzes/{quiz_id}/submit`
+
+Submit answers for a quiz.
+
+* **Body**:
 
 ```json
 {
   "responses": [
-    { "concept_id": "c1", "answer": "Efflux pump", "grade": 5 },
-    { "concept_id": "c2", "answer": "Replication", "grade": 2 }
+    { "concept_id": "c1", "answer": "string", "grade": 0-5 }
   ]
 }
 ```
 
-* `grade` can follow FSRS/Leitner scale (0–5).
-
-**Response**
+* **Response**:
 
 ```json
 {
+  "quiz_id": "q1",
   "updated_concepts": [
-    {
-      "id": "c1",
-      "next_due": "2025-08-02T00:00:00Z",
-      "interval": 3,
-      "ease_factor": 2.6
-    },
-    {
-      "id": "c2",
-      "next_due": "2025-07-30T00:00:00Z",
-      "interval": 0,
-      "ease_factor": 2.3
-    }
+    { "id": "c1", "next_due": "timestamp", "interval": 3 }
   ]
 }
 ```
-
----
-
-## **Quick Revision Notes Generator**
-
-### `POST /revision/generate`
-
-Generate cheat sheet or mindmap.
-
-**Request**
-
-```json
-{
-  "format": "cheatsheet",  // or "mindmap"
-  "concept_ids": ["c1", "c2", "c3"]
-}
-```
-
-**Response**
-
-```json
-{
-  "revision_id": "r-001",
-  "format": "cheatsheet",
-  "content": "## Efflux Pump-mediated Resistance\n- Bacteria pump out antibiotics...\n\n## Stages of Viral Infection\n1. Attachment..."
-}
-```
-
-### `GET /revision/:revision_id/download?type=pdf`
-
-Download as PDF/Markdown.
-
----
-
-## **Core Entities**
-
-### **Concept Object**
-
-```json
-{
-  "id": "string",
-  "title": "string",
-  "content": "string",
-  "srs": {
-    "interval": "int",
-    "ease_factor": "float",
-    "repetitions": "int",
-    "due_date": "datetime"
-  }
-}
-```
-
-### **Quiz Object**
-
-```json
-{
-  "quiz_id": "string",
-  "questions": [ ... ]
-}
-```
-
----
-
-## **Tech stack suggestion**
-
-* Backend: **FastAPI** (Python, async-friendly, easy REST)
-* Storage: **PostgreSQL** (concepts, SRS state)
-* File handling: **Celery + Redis** (process uploads async)
-* SRS: [py-fsrs](https://github.com/open-spaced-repetition/py-fsrs)
-* Exports: **WeasyPrint** (for PDF), **Graphviz** (for mindmaps)
