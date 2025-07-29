@@ -35,15 +35,17 @@ Step 4: User may download the cheat sheet as a markdown file or pdf and the mind
 # Roadmap
 
 1. Set up division of labour within the team
+**(DONE)**
 
 2. Prepare LLM backend (try to use smth like OpenRouter or Groq and not Ollama)
+**(TODO)**
 
 3. Make API using FastAPI and pocketflow (using stuff like ChromaDB and OpenAI)
 
-- design API interface
-- design prompts and Flows
+- design API interface **(DOING)**
+- design prompts and Flows **(TODO)**
 - (OPTIONAL because LAZY) implement authentication (https://medium.com/@wangarraakoth/user-authentication-in-fastapi-using-python-3b51af11b38d)
 
-4. Make suitable frontend (app for prototype development TBD)
+4. Make suitable frontend (app for prototype development TBD) **(TODO)**
 
-5. DOCKERISE (so I can self-host on my rpi)
+5. DOCKERISE (so I can self-host on my rpi) **(TODO)**
