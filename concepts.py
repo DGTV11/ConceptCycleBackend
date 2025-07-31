@@ -1,3 +1,4 @@
+import yaml
 from pocketflow import *
 from semantic_text_splitter import TextSplitter
 
@@ -16,7 +17,7 @@ class BatchConceptUpdate(BatchFlow):
 
 class ConceptUpdateTypeSwitch(Node):
     def prep(self, shared):
-        concept_dict = shared.get("concept_dict", {})
+        concept_dict = shared["concept_dict"]
         single_present_concept = self.params["single_present_concept"]
 
         return single_present_concept, concept_dict
@@ -27,34 +28,105 @@ class ConceptUpdateTypeSwitch(Node):
         return "append" if (single_present_concept in concept_dict) else "add"
 
 
+# https://github.com/daveshap/SparsePrimingRepresentations
 class ConceptAdd(Node):
     def prep(self, shared):
-        pass
+        single_present_concept = self.params["single_present_concept"]
+        chunk = self.params["chunk"]
+
+        return single_present_concept, chunk
 
     def exec(self, inputs):
-        pass
+        single_present_concept, chunk = inputs
+        prompt = f"""
+Given chunk of notes:
+```
+{chunk}
+```
+Target concept name: {single_present_concept}
+Analyse the chunk to pick out which part of the chunk is relevant to the target concept (e.g. make possible learning outcome from target concept name then pick out content which satisfies the learning outcome).
+You will then give distilled succinct statements, assertions, associations, concepts, analogies, and metaphors. 
+The idea is to capture as much, conceptually, as possible but with as few words as possible. 
+Write it in a way that makes sense to you, as the future audience will be another language model, not a human.
+Output in yaml:
+```yaml
+analysis: detailed step-by-step analysis of chunk
+extracted_concept_info: extracted info relevant to the target concept
+```
+        """
+        resp = call_llm(prompt)
+        yaml_str = resp.split("```yaml")[1].split("```")[0].strip()
+        result = yaml.safe_load(yaml_str)
+
+        assert isinstance(result, dict)
+        assert "analysis" in result
+        assert "extracted_concept_info" in result
+
+        return result
 
     def post(self, shared, prep_res, exec_res):
-        pass
+        single_present_concept, chunk = prep_res
+
+        shared["concept_dict"][single_present_concept] = exec_res[
+            "extracted_concept_info"
+        ]
 
 
 class ConceptAppend(Node):
     def prep(self, shared):
-        pass
+        single_present_concept = self.params["single_present_concept"]
+        chunk = self.params["chunk"]
+        current_extracted_concept_info = shared["concept_dict"][single_present_concept]
+
+        return single_present_concept, chunk, current_extracted_concept_info
 
     def exec(self, inputs):
-        pass
+        single_present_concept, chunk, current_extracted_concept_info = inputs
+        prompt = f"""
+Given chunk of notes:
+```
+{chunk}
+```
+Target concept name: {single_present_concept}
+Current extracted concept info:
+```
+{current_extracted_concept_info}
+```
+Analyse the chunk to pick out which part of the chunk is relevant to the target concept (e.g. make possible learning outcome from target concept name then pick out content which satisfies the learning outcome).
+You will then give distilled succinct statements, assertions, associations, concepts, analogies, and metaphors to be appended to the extracted concept info. 
+The idea is to capture as much, conceptually, as possible but with as few words as possible. 
+Write it in a way that makes sense to you, as the future audience will be another language model, not a human.
+Ensure that no already present information is appended to the extracted concept info.
+Output in yaml:
+```yaml
+analysis: detailed step-by-step analysis of chunk
+extracted_concept_info: extracted info relevant to the target concept
+```
+        """
+        resp = call_llm(prompt)
+        yaml_str = resp.split("```yaml")[1].split("```")[0].strip()
+        result = yaml.safe_load(yaml_str)
+
+        assert isinstance(result, dict)
+        assert "analysis" in result
+        assert "extracted_concept_info" in result
+
+        return result
 
     def post(self, shared, prep_res, exec_res):
-        pass
+        single_present_concept, chunk, current_extracted_concept_info = prep_res
+
+        shared["concept_dict"][single_present_concept] += (
+            "\n" + exec_res["extracted_concept_info"]
+        )
 
 
 concept_update_type_switch_node = ConceptUpdateTypeSwitch()
-concept_add_node = ConceptAdd()
-concept_append_node = ConceptAppend()
+concept_add_node = ConceptAdd(max_retries=10)
+concept_append_node = ConceptAppend(max_retries=10)
 
-concept_update_type_switch_node - "add" >> ConceptAdd()
-concept_update_type_switch_node - "append" >> ConceptAppend()
+concept_update_type_switch_node - "add" >> concept_add_node
+concept_update_type_switch_node - "append" >> concept_append_node
 
 concept_update = Flow(start=concept_update_type_switch_node)
 batch_concept_update = BatchConceptUpdate(start=concept_update)
@@ -70,7 +142,7 @@ class ConceptExtractor(BatchFlow):
 
 class GetConceptListFromChunk(Node):
     def prep(self, shared):
-        concept_dict = shared.get("concept_dict", {})
+        concept_dict = shared["concept_dict"]
         concept_list = list(concept_dict.keys()) or "No extracted concepts yet"
         chunk = self.params["chunk"]
         return chunk, concept_list
@@ -102,9 +174,7 @@ present_concepts: list of present concept names
         assert "analysis" in result
         assert "present_concepts" in result
         assert isinstance(result["present_concepts"], list)
-        result["present_concepts"] = map(
-            lambda x: x.strip(), result["present_concepts"]
-        )
+        result["present_concepts"] = [x.strip() for x in result["present_concepts"]]
 
         return result
 
@@ -112,7 +182,7 @@ present_concepts: list of present concept names
         shared["present_concepts"] = exec_res["present_concepts"]
 
 
-get_concept_list_node = GetConceptListFromChunk(max_retries=50)
+get_concept_list_node = GetConceptListFromChunk(max_retries=10)
 
 get_concept_list_node >> batch_concept_update
 
@@ -121,5 +191,7 @@ concept_extractor_batch_flow = ConceptExtractor(start=concept_extractor_chunk_fl
 
 
 def extract_concepts(notes: str):
+    shared = {"concept_dict": {}}
     concept_extractor_batch_flow.set_params({"notes": notes})
     concept_extractor_batch_flow.run(shared)
+    return shared["concept_dict"]
