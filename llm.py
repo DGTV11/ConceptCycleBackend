@@ -14,7 +14,6 @@ vlm_client = OpenAI(base_url=VLM_API_BASE_URL, api_key=VLM_API_KEY)
 
 
 def call_llm(prompt):
-
     completion = llm_client.chat.completions.create(
         model=LLM_NAME,
         messages=[
@@ -30,7 +29,6 @@ def call_llm(prompt):
 
 
 def call_vlm(prompt, b64_image):
-
     completion = vlm_client.chat.completions.create(
         model=VLM_NAME,
         messages=[
