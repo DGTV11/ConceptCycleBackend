@@ -50,8 +50,8 @@ The idea is to capture as much, conceptually, as possible but with as few words 
 Write it in a way that makes sense to you, as the future audience will be another language model, not a human.
 Output in yaml:
 ```yaml
-analysis: detailed step-by-step analysis of chunk
-extracted_concept_info: extracted info relevant to the target concept
+analysis: detailed step-by-step analysis of chunk (ONE string)
+extracted_concept_info: extracted info relevant to the target concept (ONE string)
 ```
         """
         resp = call_llm(prompt)
@@ -61,6 +61,7 @@ extracted_concept_info: extracted info relevant to the target concept
         assert isinstance(result, dict)
         assert "analysis" in result
         assert "extracted_concept_info" in result
+        assert isinstance(result["extracted_concept_info"], str)
 
         return result
 
@@ -99,8 +100,8 @@ Write it in a way that makes sense to you, as the future audience will be anothe
 Ensure that no already present information is appended to the extracted concept info.
 Output in yaml:
 ```yaml
-analysis: detailed step-by-step analysis of chunk
-extracted_concept_info: extracted info relevant to the target concept
+analysis: detailed step-by-step analysis of chunk (ONE string)
+extracted_concept_info: extracted info relevant to the target concept (ONE string)
 ```
         """
         resp = call_llm(prompt)
@@ -110,6 +111,7 @@ extracted_concept_info: extracted info relevant to the target concept
         assert isinstance(result, dict)
         assert "analysis" in result
         assert "extracted_concept_info" in result
+        assert isinstance(result["extracted_concept_info"], str)
 
         return result
 
@@ -157,13 +159,13 @@ Given chunk of notes:
 Previously extracted concept names: {concept_list}
 Analyse the chunk and give a list of concept names present in the chunk.
 Each concept should be bite-sized, constituting ONE DISTINCT learning outcome which can be seen from the chunk.
-Concept names should be succinct yet accurately describe the content of the concept.
+Concept names should be succinct yet accurately describe the content of the concept by being framed as a concise learning outcome.
 If a concept overlaps with a previously extracted concept, use the EXACT SAME concept name to ensure that there are NO duplicate concepts.
 If you observe no concepts in the chunk, you may generate an empty list for present_concepts.
 Output in yaml:
 ```yaml
-analysis: detailed step-by-step analysis of chunk
-present_concepts: list of present concept names
+analysis: detailed step-by-step analysis of chunk (ONE string)
+present_concepts: list of present concept names (LIST of strings)
 ```
         """
         resp = call_llm(prompt)
@@ -174,6 +176,7 @@ present_concepts: list of present concept names
         assert "analysis" in result
         assert "present_concepts" in result
         assert isinstance(result["present_concepts"], list)
+        assert all(isinstance(x, str) for x in result["present_concepts"])
         result["present_concepts"] = [x.strip() for x in result["present_concepts"]]
 
         return result
@@ -195,3 +198,15 @@ def extract_concepts(notes: str):
     concept_extractor_batch_flow.set_params({"notes": notes})
     concept_extractor_batch_flow.run(shared)
     return shared["concept_dict"]
+
+
+if __name__ == "__main__":
+    print("TEST FOR concepts.py")
+
+    assert input("DO YOU WISH TO PROCEED? (y/n) ").strip() == "y", "abort"
+
+    print(
+        extract_concepts(
+            "The characteristics of the Dead Sea: Salt lake located on the border between Israel and Jordan. Its shoreline is the lowest point on the Earth's surface, averaging 396 m below sea level. It is 74 km long. It is seven times as salty (30% by volume) as the ocean. Its density keeps swimmers afloat. Only simple organisms can live in its saline waters."
+        )
+    )
