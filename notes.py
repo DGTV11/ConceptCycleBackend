@@ -19,8 +19,22 @@ Render the input as a distilled list of succinct statements, assertions, associa
     )
 
 
-def process_file(file: SpooledTemporaryFile, content_type: str):
+def process_file(
+    file: SpooledTemporaryFile, content_type: str
+):  # txt/md, images, pptx, word, pdf
     match content_type:
-
+        case 'txt': #*applies for markdown obviously since its just txt
+            # To read a FastAPI SpooledTemporaryFile (which is the underlying file object of an UploadFile) as text, the recommended approach is to use io.TextIOWrapper for proper encoding handling.
+            #TODO: pass in file obj from input directly?
+            pass
+        case 'png':
+            pass
+        case 'jpeg':
+            pass
+        case 'pptx':
+            pass
+        case 'word':
+            pass
+        case 'pdf':
         case _:
             raise ValueError("Invalid content_type")

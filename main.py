@@ -18,10 +18,8 @@ app = FastAPI()
 
 
 @app.post("/notes")
-async def upload_notes(file: UploadFile):
-    content_type = file.content_type
-
-    content = notes.process_file(await file.read(), file.content_type)
+async def upload_notes(file: UploadFile, content_type: str):
+    content = notes.process_file(await file.read(), content_type)
 
     note_id = db.execute_query(
         connection,
