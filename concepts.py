@@ -9,10 +9,14 @@ from llm import call_llm
 # *CONCEPT LIST UPDATE
 class BatchConceptUpdate(BatchFlow):
     def prep(self, shared):
-        return [
+        concepts = [
             {"single_present_concept": concept}
             for concept in shared["present_concepts"]
         ]
+
+        print(concepts)
+
+        return concepts
 
 
 class ConceptUpdateTypeSwitch(Node):
@@ -139,7 +143,11 @@ class ConceptExtractor(BatchFlow):
     def prep(self, shared):
         notes = self.params["notes"]
         splitter = TextSplitter.from_tiktoken_model("gpt-3.5-turbo", CHUNK_MAX_TOKENS)
-        return [{"chunk": chunk} for chunk in splitter.chunks(notes)]
+        chunks = [{"chunk": chunk} for chunk in splitter.chunks(notes)]
+
+        print(chunks)
+
+        return chunks
 
 
 class GetConceptListFromChunk(Node):
