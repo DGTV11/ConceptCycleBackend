@@ -11,3 +11,5 @@ VLM_API_KEY = CONFIG["VLM_API_KEY"]
 VLM_NAME = CONFIG["VLM_NAME"]
 
 CHUNK_MAX_TOKENS = int(CONFIG["CHUNK_MAX_TOKENS"])
+
+DEBUG_MODE = True if CONFIG["DEBUG_MODE"].strip().lower() == "true" else False

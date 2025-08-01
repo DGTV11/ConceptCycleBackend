@@ -3,6 +3,7 @@ from pocketflow import *
 from semantic_text_splitter import TextSplitter
 
 from config import CHUNK_MAX_TOKENS
+from debug import printd
 from llm import call_llm
 
 
@@ -14,7 +15,7 @@ class BatchConceptUpdate(BatchFlow):
             for concept in shared["present_concepts"]
         ]
 
-        print(concepts)
+        printd(concepts)
 
         return concepts
 
@@ -145,7 +146,7 @@ class ConceptExtractor(BatchFlow):
         splitter = TextSplitter.from_tiktoken_model("gpt-3.5-turbo", CHUNK_MAX_TOKENS)
         chunks = [{"chunk": chunk} for chunk in splitter.chunks(notes)]
 
-        print(chunks)
+        printd(chunks)
 
         return chunks
 

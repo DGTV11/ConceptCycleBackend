@@ -1,10 +1,12 @@
 import sqlite3
 from sqlite3 import Error
 
+from debug import printd
+
 
 def create_connection(path):
     connection = sqlite3.connect(path)
-    print("Connection to SQLite DB successful")
+    printd("Connection to SQLite DB successful")
 
     return connection
 
@@ -16,6 +18,6 @@ def execute_query(connection, query, values=None):  # values can be tuple
     else:
         cursor.execute(query, values)
     connection.commit()
-    print(f"Query {query} executed successfully")
+    printd(f"Query {query} executed successfully")
 
     return cursor.get_last_row_id

@@ -27,6 +27,7 @@ VLM_API_BASE_URL=<fill me>
 VLM_API_KEY=<fill me>
 VLM_NAME=<fill me>
 CHUNK_MAX_TOKENS=<fill me>
+DEBUG_MODE=<fill me>
 ```
 
 3. Run server
