@@ -14,15 +14,24 @@ Do note that example response data, if any are merely illustrative and may not r
 Upload a new note.
 
 * **Body**: `multipart/form-data` (file upload, optional metadata)
-* **Response**: `{ "note_id": "uuid", "status": "processing" }`
+* **Response**: `{ "note_id": "uuid" }`
 
 ---
+
+### `POST /notes/text`
+
+Upload a new note in text form.
+
+* **Response**: `{ "note_id": "uuid" }`
+
+---
+
 
 ### `GET /notes`
 
 List all uploaded notes.
 
-* **Response**: `[ { "id": "uuid", "name": "string", "status": "processed|pending" } ]`
+* **Response**: `[ { "id": "uuid", "name": "string", "status": "processed|processing|pending" } ]`
 
 ---
 
@@ -30,7 +39,7 @@ List all uploaded notes.
 
 Get a specific note by ID.
 
-* **Response**: `{ "id": "uuid", "content": "string", "status": "processed|pending" }`
+* **Response**: `{ "id": "uuid", "content": "string", "status": "processed|processing|pending" }`
 
 ---
 

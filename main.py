@@ -1,12 +1,16 @@
 import json
+import os
 from asyncio import Semaphore
 from datetime import timedelta
 from time import time
 from uuid import uuid4
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile
 from pydantic import BaseModel
+
+import concepts
+import notes
 
 app = FastAPI()
 
@@ -16,8 +20,39 @@ app = FastAPI()
 
 
 @app.post("/notes")
-async def upload_notes():
-    pass
+async def upload_notes(file: UploadFile):
+    content_type = file.content_type
+
+    content = notes.process_file(await file.read(), file.content_type)
+
+    note_id = db.execute_query(
+        connection,
+        """
+        INSERT INTO
+            users (name, content)
+        VALUES
+            (?, ?)
+        """,
+        (os.path.basename(file.filename).split(".")[0], content),
+    )
+
+    return {"note_id": note_id}
+
+
+@app.post("/notes/text")
+async def upload_textual_notes(name: str, content: str):
+    note_id = db.execute_query(
+        connection,
+        """
+        INSERT INTO
+            users (name, content)
+        VALUES
+            (?, ?)
+        """,
+        (name, content),
+    )
+
+    return {"note_id": note_id}
 
 
 @app.get("/notes")
@@ -77,4 +112,20 @@ async def submit_quiz(quiz_id: str, responses: list[str]):
 
 
 if __name__ == "__main__":
+    db_connection = db.create_connection(
+        os.path.join(os.path.dirname(__file__), "db.sqlite")
+    )
+    db.execute_query(
+        connection,
+        """
+        CREATE TABLE IF NOT EXISTS notes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            content TEXT NOT NULL
+        );
+        """,
+    )
+
     uvicorn.run(app, port=5046, host="0.0.0.0")
+
+    connection.close()

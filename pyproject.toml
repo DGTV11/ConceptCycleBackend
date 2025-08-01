@@ -9,6 +9,7 @@ dependencies = [
     "openai>=1.97.1",
     "pocketflow>=0.0.3",
     "python-dotenv>=1.1.1",
+    "python-multipart>=0.0.20",
     "pyyaml>=6.0.2",
     "semantic-text-splitter>=0.27.0",
     "uvicorn>=0.35.0",
