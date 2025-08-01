@@ -32,7 +32,7 @@ class ConceptUpdateTypeSwitch(Node):
         return "append" if (single_present_concept in concept_dict) else "add"
 
 
-# https://github.com/daveshap/SparsePrimingRepresentations
+# *https://github.com/daveshap/SparsePrimingRepresentations
 class ConceptAdd(Node):
     def prep(self, shared):
         single_present_concept = self.params["single_present_concept"]
