@@ -1,9 +1,15 @@
+import base64
+from io import BytesIO
 from tempfile import SpooledTemporaryFile
+
+import fitz
+from docx import Document
+from pptx import Presentation
 
 from llm import call_vlm
 
 
-def vlm_process_image(b64_image):
+def vlm_process_image(b64_image, img_type):
     return call_vlm(
         """
 # MISSION
@@ -16,25 +22,92 @@ LLMs are a kind of deep neural network. They have been demonstrated to embed kno
 Render the input as a distilled list of succinct statements, assertions, associations, concepts, analogies, and metaphors. The idea is to capture as much, conceptually, as possible but with as few words as possible. Write it in a way that makes sense to you, as the future audience will be another language model, not a human.
 """,  # *https://github.com/daveshap/SparsePrimingRepresentations
         b64_image,
+        img_type,
     )
 
 
 def process_file(
-    file: SpooledTemporaryFile, content_type: str
+    file: SpooledTemporaryFile, filename: str, content_type: str
 ):  # txt/md, images, pptx, word, pdf
     match content_type:
-        case 'txt': #*applies for markdown obviously since its just txt
+        case "txt":  # *applies for markdown obviously since its just txt
             # To read a FastAPI SpooledTemporaryFile (which is the underlying file object of an UploadFile) as text, the recommended approach is to use io.TextIOWrapper for proper encoding handling.
-            #TODO: pass in file obj from input directly?
-            pass
-        case 'png':
-            pass
-        case 'jpeg':
-            pass
-        case 'pptx':
-            pass
-        case 'word':
-            pass
-        case 'pdf':
+            return file.read().decode("utf-8")
+        case "png":
+            return call_vlm(base64.b64encode(file.read()).decode("utf-8"), "png")
+        case "jpeg":
+            return call_vlm(base64.b64encode(file.read()).decode("utf-8"), "jpeg")
+        case "pptx":
+            slides = Presentation(BytesIO(file.read())).slides
+
+            slides_notes = ""
+            for slide in enumerate(slides, start=1):
+                for shape in slide.shapes:
+                    if hasattr(shape, "text"):
+                        slides_notes += shape.text + "\n"
+                    if hasattr(shape, "image"):
+                        slides_notes += (
+                            "\n"
+                            + "===IMAGE START==="
+                            + call_vlm(
+                                shape.image.blob,
+                                shape.image.content_type.replace("image/", ""),
+                            )
+                            + "===IMAGE END==="
+                            + "\n"
+                        )
+
+            return slides_notes
+        case "docx":
+            doc = Document(BytesIO(file.read()))
+            docx_notes = ""
+
+            for para in doc.paragraphs:
+                for run in para.runs:
+                    # --- If it's plain text ---
+                    if run.text:
+                        docx_notes += run.text
+
+                    # --- If run contains an image ---
+                    drawing_elems = run._element.findall(
+                        ".//w:drawing", namespaces=run._element.nsmap
+                    )
+                    for drawing in drawing_elems:
+                        # Each drawing contains a blip reference to the image
+                        blip = drawing.find(".//a:blip", namespaces=drawing.nsmap)
+                        if blip is not None:
+                            embed_rid = blip.get(qn("r:embed"))
+                            image_part = doc.part.related_parts[embed_rid]
+
+                            blob = image_part.blob
+                            content_type = image_part.content_type  # e.g. image/png
+
+                            # Insert the "processed image" inline
+                            docx_notes += (
+                                "\n===IMAGE START===\n"
+                                + call_vlm(blob, content_type.replace("image/", ""))
+                                + "\n===IMAGE END===\n"
+                            )
+
+                docx_notes += "\n"  # end of paragraph
+
+            return docx_notes
+        case "pdf":
+            doc = fitz.open("pdf", file.read())
+            pdf_notes = ""
+            for page in doc:
+                pdf_notes += page.get_text("text") + "\n"
+
+                for img_index, img in enumerate(page.get_images(full=True)):
+                    xref = img[0]
+                    base_image = doc.extract_image(xref)
+                    blob = base_image["image"]
+                    ext = base_image["ext"]
+                    pdf_notes += (
+                        "\n===IMAGE START===\n"
+                        + call_vlm(blob, ext)
+                        + "\n===IMAGE END===\n"
+                    )
+            return pdf_notes
         case _:
             raise ValueError("Invalid content_type")
