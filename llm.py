@@ -28,7 +28,7 @@ def call_llm(prompt):
     return completion.choices[0].message.content
 
 
-def call_vlm(prompt, b64_image):
+def call_vlm(prompt, b64_image, img_type="jpeg"):
     completion = vlm_client.chat.completions.create(
         model=VLM_NAME,
         messages=[
@@ -42,7 +42,7 @@ def call_vlm(prompt, b64_image):
                     {"type": "input_text", "text": prompt},
                     {
                         "type": "input_image",
-                        "image_url": f"data:image/jpeg;base64,{b64_image}",
+                        "image_url": f"data:image/{img_type};base64,{b64_image}",
                     },
                 ],
             },
