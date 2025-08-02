@@ -14,10 +14,10 @@ def create_connection(path):
 def execute_query(connection, query, values=None):  # values can be tuple
     cursor = connection.cursor()
     if values:
-        cursor.execute(query)
-    else:
         cursor.execute(query, values)
+    else:
+        cursor.execute(query)
     connection.commit()
     printd(f"Query {query} executed successfully")
 
-    return cursor.get_last_row_id
+    return cursor.lastrowid

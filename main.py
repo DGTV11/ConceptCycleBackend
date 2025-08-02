@@ -8,6 +8,7 @@ from fastapi import FastAPI, UploadFile
 from pydantic import BaseModel
 
 import concepts
+import db
 import notes
 
 app = FastAPI()
@@ -19,7 +20,8 @@ app = FastAPI()
 
 @app.post("/notes")
 async def upload_notes(file: UploadFile, content_type: str):
-    content = notes.process_file(await file.read(), content_type)
+    filename = os.path.basename(file.filename).split(".")[0]
+    content = notes.process_file(await file.read(), filename, content_type)
 
     note_id = db.execute_query(
         connection,
@@ -29,7 +31,7 @@ async def upload_notes(file: UploadFile, content_type: str):
         VALUES
             (?, ?)
         """,
-        (os.path.basename(file.filename).split(".")[0], content),
+        (filename, content),
     )
 
     return {"note_id": note_id}
@@ -108,7 +110,7 @@ async def submit_quiz(quiz_id: str, responses: list[str]):
 
 
 if __name__ == "__main__":
-    db_connection = db.create_connection(
+    connection = db.create_connection(
         os.path.join(os.path.dirname(__file__), "db.sqlite")
     )
     db.execute_query(
