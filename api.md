@@ -83,7 +83,7 @@ Get details of a concept.
 
 List all quizzes (past + active).
 
-* **Response**: `[ { "quiz_id": "q1", "created": "timestamp", "status": "active|completed" } ]`
+* **Response**: `[ { "id": "q1", "created": "timestamp", "status": "active|completed" } ]`
 
 ---
 
@@ -96,7 +96,7 @@ Start a new quiz.
   * `concept_limit`: int → number of concepts
   * `question_limit`: int → number of questions (must be above or equal to number of concepts)
   * `mode`: string → `"due_only" | "new_only" | "mixed"`
-* **Response**: `{ "quiz_id": "q1", "questions": [ { "concept_id": "c1", "question": "string" } ] }`
+* **Response**: `{ "id": "q1", "questions": [ { "concept_id": "c1", "question": "string" } ] }`
 
 ---
 
@@ -104,7 +104,7 @@ Start a new quiz.
 
 Get quiz by ID.
 
-* **Response**: `{ "quiz_id": "q1", "questions": [...], "status": "active|completed" }`
+* **Response**: `{ "id": "q1", "questions": [...], "status": "active|completed" }`
 
 ---
 
@@ -116,9 +116,7 @@ Submit answers for a quiz.
 
 ```json
 {
-  "responses": [
-    { "concept_id": "c1", "answer": "string", "grade": 0-5 }
-  ]
+  "answers": [...]
 }
 ```
 
@@ -126,7 +124,8 @@ Submit answers for a quiz.
 
 ```json
 {
-  "quiz_id": "q1",
+  "id": "q1",
+  "feedback": [...],
   "updated_concepts": [
     { "id": "c1", "next_due": "timestamp", "interval": 3 }
   ]
