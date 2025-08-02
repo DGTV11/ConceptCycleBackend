@@ -98,7 +98,8 @@ class TextNoteIn(BaseModel):
 
 
 class StartQuizIn(BaseModel):
-    limit: int
+    concept_limit: int
+    question_limit: int
     mode: str
 
 

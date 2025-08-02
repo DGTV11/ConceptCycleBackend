@@ -93,7 +93,8 @@ Start a new quiz.
 
 * **Query params**:
 
-  * `limit`: int → number of questions
+  * `concept_limit`: int → number of concepts
+  * `question_limit`: int → number of questions (must be above or equal to number of concepts)
   * `mode`: string → `"due_only" | "new_only" | "mixed"`
 * **Response**: `{ "quiz_id": "q1", "questions": [ { "concept_id": "c1", "question": "string" } ] }`
 
