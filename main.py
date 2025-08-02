@@ -135,7 +135,7 @@ async def process_note_into_concept(note_id: str = Path(...)):
     extracted_concepts = concept_extraction.extract_concepts(content)
 
     for name, content in extracted_concepts.items():
-        concepts.create_concept_card(name, content)
+        concepts.create_concept_card(connection, name, content)
 
     db.execute_write_query(
         connection,
@@ -207,6 +207,7 @@ if __name__ == "__main__":
 
     connection.execute("PRAGMA foreign_keys = ON")
 
+    # *Create notes tables
     db.execute_write_query(
         connection,
         """
@@ -219,6 +220,7 @@ if __name__ == "__main__":
         """,
     )
 
+    # *Create concepts tables
     db.execute_write_query(
         connection,
         """
@@ -227,6 +229,11 @@ if __name__ == "__main__":
             name TEXT NOT NULL,
             content TEXT NOT NULL
         );
+        """,
+    )
+    db.execute_write_query(
+        connection,
+        """
         CREATE TABLE IF NOT EXISTS cards (
             id INTEGER PRIMARY KEY NOT NULL,
             concept_id TEXT NOT NULL,
@@ -238,6 +245,11 @@ if __name__ == "__main__":
             last_review TEXT,
             FOREIGN KEY(concept_id) REFERENCES concepts(id) ON DELETE CASCADE
         );
+        """,
+    )
+    db.execute_write_query(
+        connection,
+        """
         CREATE TABLE IF NOT EXISTS review_logs (
             id         INTEGER PRIMARY KEY,
             card_id    INTEGER NOT NULL,

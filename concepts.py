@@ -1,4 +1,5 @@
 from datetime import timedelta
+from uuid import uuid4
 
 from fsrs import Card, Rating, ReviewLog, Scheduler
 
@@ -50,7 +51,7 @@ scheduler = Scheduler(
 )
 
 
-def create_concept_card(name: str, content: str):
+def create_concept_card(connection, name: str, content: str):
     concept_id = str(uuid4())
     db.execute_write_query(
         connection,
@@ -70,7 +71,7 @@ def create_concept_card(name: str, content: str):
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
-            card_dict["id"],
+            card_dict["card_id"],
             concept_id,
             card_dict["state"],
             card_dict["step"],
