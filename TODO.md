@@ -44,8 +44,11 @@ Step 4: User may download the cheat sheet as a markdown file or pdf and the mind
 
 - design API interface **(DONE)**
 - design prompts and Flows **(TODO)**
+    - concept extractor **(DONE)**
+    - quiz generator **(TODO)**
+    - quiz grader + SRS update system **(TODO)**
 - (OPTIONAL because LAZY) implement authentication (https://medium.com/@wangarraakoth/user-authentication-in-fastapi-using-python-3b51af11b38d)
 
 4. Make suitable frontend (app for prototype development TBD) **(TODO)**
 
-5. DOCKERISE (so I can self-host on my rpi) **(TODO)**
+5. (NOT URGENT) DOCKERISE (so I can self-host on my rpi) **(TODO)**
