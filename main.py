@@ -86,6 +86,10 @@ async def lifespan(app: FastAPI):
     connection.close()
 
 
+# * App
+
+app = FastAPI(lifespan=lifespan)
+
 # sem = Semaphore(1)
 
 # *Models
@@ -285,8 +289,3 @@ async def get_quiz(quiz_id: str = Path(...)):
 @app.post("/quizzes/{quiz_id}/submit")
 async def submit_quiz(quiz_id: str = Path(...), submit_data: SubmitQuizIn = None):
     pass
-
-
-# * App
-
-app = FastAPI(lifespan=lifespan)
