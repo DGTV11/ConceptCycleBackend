@@ -14,6 +14,8 @@ import concepts
 import db
 import notes
 
+# * Context manager
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -82,9 +84,6 @@ async def lifespan(app: FastAPI):
     yield  # *run app
 
     connection.close()
-
-
-app = FastAPI(lifespan=lifespan)
 
 
 # sem = Semaphore(1)
@@ -227,7 +226,23 @@ async def process_note_into_concept(note_id: str = Path(...)):
 
 @app.get("/concepts")
 async def list_concepts():
-    return db.execute_read_query(connection, "SELECT id, name FROM concepts")
+    raw_concepts = db.execute_read_query(connection, "SELECT id, name FROM concepts")
+
+    concepts = []
+
+    for id, name in raw_concepts:
+        srs_info = db.execute_read_query(
+            connection,
+            """
+            SELECT id, state, step, stability, difficulty, due, last_review
+            FROM cards
+            WHERE concept_id = ?
+            """,
+            (id,),
+        )[0]
+        concepts.append({"id": id, "name": name, "srs_info": srs_info})
+
+    return concepts
 
 
 @app.get("/concepts/{concept_id}")
@@ -270,3 +285,8 @@ async def get_quiz(quiz_id: str = Path(...)):
 @app.post("/quizzes/{quiz_id}/submit")
 async def submit_quiz(quiz_id: str = Path(...), submit_data: SubmitQuizIn = None):
     pass
+
+
+# * App
+
+app = FastAPI(lifespan=lifespan)

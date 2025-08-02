@@ -65,7 +65,7 @@ Process a note into concept documents.
 
 List all concepts.
 
-* **Response**: `[ { "id": "c1", "name": "string" } ]`
+* **Response**: `[ { "id": "c1", "name": "string", "srs_info": {...} } ]`
 
 ---
 
