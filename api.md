@@ -55,7 +55,7 @@ Delete a note by ID.
 
 Process a note into concept documents.
 
-* **Response**: `{ "note_id": "uuid", "concepts_generated": int }`
+* **Response**: `{ "note_id": "uuid", "concepts_generated": int }` | `{ "error": "Note is already being processed or has been processed" }`
 
 ---
 
@@ -65,7 +65,7 @@ Process a note into concept documents.
 
 List all concepts.
 
-* **Response**: `[ { "id": "c1", "title": "string", "content": "string", "srs": {...} } ]`
+* **Response**: `[ { "id": "c1", "name": "string" } ]`
 
 ---
 
@@ -73,7 +73,7 @@ List all concepts.
 
 Get details of a concept.
 
-* **Response**: `{ "id": "c1", "title": "string", "content": "string", "srs": {...} }`
+* **Response**: `{ "name": "string", "content": "string", "srs_info": {...} }`
 
 ---
 

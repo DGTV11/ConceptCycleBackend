@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.116.1",
+    "fsrs>=6.1.0",
     "openai>=1.97.1",
     "pocketflow>=0.0.3",
     "pymupdf>=1.26.3",

@@ -8,6 +8,7 @@ import uvicorn
 from fastapi import FastAPI, File, Form, Path, Query, UploadFile
 from pydantic import BaseModel
 
+import concept_extraction
 import concepts
 import db
 import notes
@@ -98,7 +99,7 @@ async def get_note_by_id(note_id: str = Path(...)):
 async def delete_note_by_id(note_id: str = Path(...)):
     db.execute_write_query(
         connection,
-        "DELETE FROM notes WHERE id=?",
+        "DELETE FROM notes WHERE id = ?",
         (note_id,),
     )
     return {"deleted": True}
@@ -106,7 +107,47 @@ async def delete_note_by_id(note_id: str = Path(...)):
 
 @app.post("/notes/{note_id}/process")
 async def process_note_into_concept(note_id: str = Path(...)):
-    pass
+    status = db.execute_read_query(
+        connection,
+        "SELECT status FROM notes WHERE id = ?",
+        (note_id,),
+    )[0][0]
+
+    if status in ["processing", "processed"]:
+        return {"error": "Note is already being processed or has been processed"}
+
+    db.execute_write_query(
+        connection,
+        """
+        UPDATE notes
+        SET status = 'processing'
+        WHERE id = ?
+        """,
+        (note_id,),
+    )
+
+    content = db.execute_read_query(
+        connection,
+        "SELECT content FROM notes WHERE id = ?",
+        (note_id,),
+    )[0][0]
+
+    extracted_concepts = concept_extraction.extract_concepts(content)
+
+    for name, content in extracted_concepts.items():
+        concepts.create_concept_card(name, content)
+
+    db.execute_write_query(
+        connection,
+        """
+        UPDATE notes
+        SET status = 'processed'
+        WHERE id = ?
+        """,
+        (note_id,),
+    )
+
+    return {"note_id": note_id, "concepts_generated": len(extracted_concepts)}
 
 
 # *CONCEPTS
@@ -114,12 +155,26 @@ async def process_note_into_concept(note_id: str = Path(...)):
 
 @app.get("/concepts")
 async def list_concepts():
-    pass
+    return db.execute_read_query(connection, "SELECT id, name FROM concepts")
 
 
 @app.get("/concepts/{concept_id}")
 async def get_concept_by_id(concept_id: str = Path(...)):
-    pass
+    name, content = db.execute_read_query(
+        connection, "SELECT name, content FROM concepts WHERE id = ?", (concept_id,)
+    )[0]
+
+    srs_info = db.execute_read_query(
+        connection,
+        """
+        SELECT id, state, step, stability, difficulty, due, last_review
+        FROM cards
+        WHERE concept_id = ?
+        """,
+        (concept_id,),
+    )[0]
+
+    return {"name": name, "content": content, "srs_info": srs_info}
 
 
 # *QUIZZES
@@ -150,6 +205,8 @@ if __name__ == "__main__":
         os.path.join(os.path.dirname(__file__), "db.sqlite")
     )
 
+    connection.execute("PRAGMA foreign_keys = ON")
+
     db.execute_write_query(
         connection,
         """
@@ -162,15 +219,35 @@ if __name__ == "__main__":
         """,
     )
 
-    # db.execute_write_query(
-    #     connection,
-    #     """
-    #     CREATE TABLE IF NOT EXISTS concepts (
-    #         id TEXT PRIMARY KEY NOT NULL,
-    #         content TEXT NOT NULL
-    #     );
-    #     """,
-    # )
+    db.execute_write_query(
+        connection,
+        """
+        CREATE TABLE IF NOT EXISTS concepts (
+            id TEXT PRIMARY KEY NOT NULL,
+            name TEXT NOT NULL,
+            content TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS cards (
+            id INTEGER PRIMARY KEY NOT NULL,
+            concept_id TEXT NOT NULL,
+            state TEXT,
+            step TEXT,
+            stability REAL,
+            difficulty REAL,
+            due TEXT,
+            last_review TEXT,
+            FOREIGN KEY(concept_id) REFERENCES concepts(id) ON DELETE CASCADE
+        );
+        CREATE TABLE IF NOT EXISTS review_logs (
+            id         INTEGER PRIMARY KEY,
+            card_id    INTEGER NOT NULL,
+            rating     INTEGER,
+            review_datetime TEXT,
+            review_duration TEXT,
+            FOREIGN KEY(card_id) REFERENCES cards(id) ON DELETE CASCADE
+        );
+        """,
+    )
 
     uvicorn.run(app, port=5046, host="0.0.0.0")
 
