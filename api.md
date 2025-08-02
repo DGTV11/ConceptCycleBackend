@@ -39,7 +39,7 @@ List all uploaded notes.
 
 Get a specific note by ID.
 
-* **Response**: `{ "id": "uuid", "content": "string", "status": "processed|processing|pending" }`
+* **Response**: `{ "name": "string", "content": "string", "status": "processed|processing|pending" }`
 
 ---
 

@@ -11,7 +11,7 @@ def create_connection(path):
     return connection
 
 
-def execute_query(connection, query, values=None):  # values can be tuple
+def execute_write_query(connection, query, values=None):  # values can be tuple
     cursor = connection.cursor()
     if values:
         cursor.execute(query, values)
@@ -21,3 +21,14 @@ def execute_query(connection, query, values=None):  # values can be tuple
     printd(f"Query {query} executed successfully")
 
     return cursor.lastrowid
+
+
+def execute_read_query(connection, query, values=None):  # values can be tuple
+    cursor = connection.cursor()
+    if values:
+        cursor.execute(query, values)
+    else:
+        cursor.execute(query)
+    printd(f"Query {query} executed successfully")
+
+    return cursor.fetchall()

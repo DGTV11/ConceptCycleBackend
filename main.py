@@ -1,10 +1,11 @@
 import json
 import os
 from asyncio import Semaphore
+from typing import List, Optional
 from uuid import uuid4
 
 import uvicorn
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, File, Form, Path, Query, UploadFile
 from pydantic import BaseModel
 
 import concepts
@@ -13,63 +14,98 @@ import notes
 
 app = FastAPI()
 
+
 # sem = Semaphore(1)
 
-# *NOTES
+# *Models
+
+
+class TextNoteIn(BaseModel):
+    name: str
+    content: str
+
+
+class StartQuizIn(BaseModel):
+    limit: int
+    mode: str
+
+
+class SubmitQuizIn(BaseModel):
+    responses: List[str]
+
+
+# *Endpoints
 
 
 @app.post("/notes")
-async def upload_notes(file: UploadFile, content_type: str):
-    filename = os.path.basename(file.filename).split(".")[0]
-    content = notes.process_file(await file.read(), filename, content_type)
+async def upload_notes(
+    file: UploadFile = File(...),
+    content_type: str = Form(...),
+):
+    filename = file.filename.rsplit(".", 1)[0]
+    content_bytes = await file.read()
+    content = notes.process_file(content_bytes, filename, content_type)
 
-    note_id = db.execute_query(
+    note_id = str(uuid4())
+    db.execute_write_query(
         connection,
         """
-        INSERT INTO
-            users (name, content)
-        VALUES
-            (?, ?)
+        INSERT INTO notes (id, name, content, status)
+        VALUES (?, ?, ?, 'pending')
         """,
-        (filename, content),
+        (note_id, filename, content),
     )
-
     return {"note_id": note_id}
 
 
 @app.post("/notes/text")
-async def upload_textual_notes(name: str, content: str):
-    note_id = db.execute_query(
+async def upload_textual_notes(note: TextNoteIn):
+    note_id = str(uuid4())
+    db.execute_write_query(
         connection,
         """
-        INSERT INTO
-            users (name, content)
-        VALUES
-            (?, ?)
+        INSERT INTO notes (id, name, content, status)
+        VALUES (?, ?, ?, 'pending')
         """,
-        (name, content),
+        (note_id, note.name, note.content),
     )
-
     return {"note_id": note_id}
 
 
 @app.get("/notes")
 async def list_notes():
-    pass
+    notes = db.execute_read_query(connection, "SELECT id, name, status FROM notes")
+
+    return [{"id": id, "name": name, "status": status} for id, name, status in notes]
 
 
 @app.get("/notes/{note_id}")
-async def get_note_by_id(note_id: str):
-    pass
+async def get_note_by_id(note_id: str = Path(...)):
+    name, content, status = db.execute_read_query(
+        connection,
+        """
+        SELECT name, content, status 
+        FROM notes
+        WHERE id = ?
+        """,
+        (note_id,),
+    )[0]
+
+    return {"name": name, "content": content, "status": status}
 
 
 @app.delete("/notes/{note_id}")
-async def delete_note_by_id(note_id: str):
-    pass
+async def delete_note_by_id(note_id: str = Path(...)):
+    db.execute_write_query(
+        connection,
+        "DELETE FROM notes WHERE id=?",
+        (note_id,),
+    )
+    return {"deleted": True}
 
 
 @app.post("/notes/{note_id}/process")
-async def process_note_into_concept(note_id: str):
+async def process_note_into_concept(note_id: str = Path(...)):
     pass
 
 
@@ -82,7 +118,7 @@ async def list_concepts():
 
 
 @app.get("/concepts/{concept_id}")
-async def get_concept_by_id(concept_id: str):
+async def get_concept_by_id(concept_id: str = Path(...)):
     pass
 
 
@@ -95,17 +131,17 @@ async def list_quizzes():
 
 
 @app.post("/quizzes")
-async def start_quiz(limit: int, mode: str):
+async def start_quiz(quiz_data: StartQuizIn):
     pass
 
 
 @app.get("/quizzes/{quiz_id}")
-async def get_quiz(quiz_id: str):
+async def get_quiz(quiz_id: str = Path(...)):
     pass
 
 
 @app.post("/quizzes/{quiz_id}/submit")
-async def submit_quiz(quiz_id: str, responses: list[str]):
+async def submit_quiz(quiz_id: str = Path(...), submit_data: SubmitQuizIn = None):
     pass
 
 
@@ -113,12 +149,24 @@ if __name__ == "__main__":
     connection = db.create_connection(
         os.path.join(os.path.dirname(__file__), "db.sqlite")
     )
-    db.execute_query(
+
+    db.execute_write_query(
         connection,
         """
         CREATE TABLE IF NOT EXISTS notes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id TEXT PRIMARY KEY NOT NULL,
             name TEXT NOT NULL,
+            content TEXT NOT NULL,
+            status TEXT NOT NULL
+        );
+        """,
+    )
+
+    db.execute_write_query(
+        connection,
+        """
+        CREATE TABLE IF NOT EXISTS conccepts (
+            id TEXT PRIMARY KEY NOT NULL,
             content TEXT NOT NULL
         );
         """,
