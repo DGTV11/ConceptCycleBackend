@@ -162,15 +162,15 @@ if __name__ == "__main__":
         """,
     )
 
-    db.execute_write_query(
-        connection,
-        """
-        CREATE TABLE IF NOT EXISTS conccepts (
-            id TEXT PRIMARY KEY NOT NULL,
-            content TEXT NOT NULL
-        );
-        """,
-    )
+    # db.execute_write_query(
+    #     connection,
+    #     """
+    #     CREATE TABLE IF NOT EXISTS concepts (
+    #         id TEXT PRIMARY KEY NOT NULL,
+    #         content TEXT NOT NULL
+    #     );
+    #     """,
+    # )
 
     uvicorn.run(app, port=5046, host="0.0.0.0")
 
