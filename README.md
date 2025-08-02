@@ -1,6 +1,7 @@
 # AI Study Buddy Backend
 
 ## Install
+
 1. Clone repo
 ```bash
 git clone git@github.com:DGTV11/AIStudyBuddyBackend.git
@@ -34,3 +35,7 @@ DEBUG_MODE=<fill me>
 ```bash
 uv run main.py
 ```
+
+## Notes
+
+I recommend unit testing endpoints using ![httpie](https://httpie.io/) for sanity reasons
