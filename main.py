@@ -1,10 +1,10 @@
 import json
 import os
 from asyncio import Semaphore
+from contextlib import asynccontextmanager
 from typing import List, Optional
 from uuid import uuid4
 
-import uvicorn
 from fastapi import FastAPI, File, Form, Path, Query, UploadFile
 from pydantic import BaseModel
 
@@ -13,7 +13,77 @@ import concepts
 import db
 import notes
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global connection
+
+    connection = db.create_connection(
+        os.path.join(os.path.dirname(__file__), "db.sqlite")
+    )
+
+    connection.execute("PRAGMA foreign_keys = ON")
+
+    # *Create notes tables
+    db.execute_write_query(
+        connection,
+        """
+        CREATE TABLE IF NOT EXISTS notes (
+            id TEXT PRIMARY KEY NOT NULL,
+            name TEXT NOT NULL,
+            content TEXT NOT NULL,
+            status TEXT NOT NULL
+        );
+        """,
+    )
+
+    # *Create concepts tables
+    db.execute_write_query(
+        connection,
+        """
+        CREATE TABLE IF NOT EXISTS concepts (
+            id TEXT PRIMARY KEY NOT NULL,
+            name TEXT NOT NULL,
+            content TEXT NOT NULL
+        );
+        """,
+    )
+    db.execute_write_query(
+        connection,
+        """
+        CREATE TABLE IF NOT EXISTS cards (
+            id INTEGER PRIMARY KEY NOT NULL,
+            concept_id TEXT NOT NULL,
+            state TEXT,
+            step TEXT,
+            stability REAL,
+            difficulty REAL,
+            due TEXT,
+            last_review TEXT,
+            FOREIGN KEY(concept_id) REFERENCES concepts(id) ON DELETE CASCADE
+        );
+        """,
+    )
+    db.execute_write_query(
+        connection,
+        """
+        CREATE TABLE IF NOT EXISTS review_logs (
+            id         INTEGER PRIMARY KEY,
+            card_id    INTEGER NOT NULL,
+            rating     INTEGER,
+            review_datetime TEXT,
+            review_duration TEXT,
+            FOREIGN KEY(card_id) REFERENCES cards(id) ON DELETE CASCADE
+        );
+        """,
+    )
+
+    yield  # *run app
+
+    connection.close()
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 # sem = Semaphore(1)
@@ -198,69 +268,3 @@ async def get_quiz(quiz_id: str = Path(...)):
 @app.post("/quizzes/{quiz_id}/submit")
 async def submit_quiz(quiz_id: str = Path(...), submit_data: SubmitQuizIn = None):
     pass
-
-
-if __name__ == "__main__":
-    connection = db.create_connection(
-        os.path.join(os.path.dirname(__file__), "db.sqlite")
-    )
-
-    connection.execute("PRAGMA foreign_keys = ON")
-
-    # *Create notes tables
-    db.execute_write_query(
-        connection,
-        """
-        CREATE TABLE IF NOT EXISTS notes (
-            id TEXT PRIMARY KEY NOT NULL,
-            name TEXT NOT NULL,
-            content TEXT NOT NULL,
-            status TEXT NOT NULL
-        );
-        """,
-    )
-
-    # *Create concepts tables
-    db.execute_write_query(
-        connection,
-        """
-        CREATE TABLE IF NOT EXISTS concepts (
-            id TEXT PRIMARY KEY NOT NULL,
-            name TEXT NOT NULL,
-            content TEXT NOT NULL
-        );
-        """,
-    )
-    db.execute_write_query(
-        connection,
-        """
-        CREATE TABLE IF NOT EXISTS cards (
-            id INTEGER PRIMARY KEY NOT NULL,
-            concept_id TEXT NOT NULL,
-            state TEXT,
-            step TEXT,
-            stability REAL,
-            difficulty REAL,
-            due TEXT,
-            last_review TEXT,
-            FOREIGN KEY(concept_id) REFERENCES concepts(id) ON DELETE CASCADE
-        );
-        """,
-    )
-    db.execute_write_query(
-        connection,
-        """
-        CREATE TABLE IF NOT EXISTS review_logs (
-            id         INTEGER PRIMARY KEY,
-            card_id    INTEGER NOT NULL,
-            rating     INTEGER,
-            review_datetime TEXT,
-            review_duration TEXT,
-            FOREIGN KEY(card_id) REFERENCES cards(id) ON DELETE CASCADE
-        );
-        """,
-    )
-
-    uvicorn.run(app, port=5046, host="0.0.0.0")
-
-    connection.close()

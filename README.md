@@ -33,7 +33,13 @@ DEBUG_MODE=<fill me>
 
 3. Run server
 ```bash
-uv run main.py
+uv run fastapi dev --port=5046
+```
+
+OR
+
+```bash
+uv run fastapi run --port=5046
 ```
 
 ## Notes

@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "fastapi>=0.116.1",
+    "fastapi[standard]>=0.116.1",
     "fsrs>=6.1.0",
     "openai>=1.97.1",
     "pocketflow>=0.0.3",
@@ -16,5 +16,4 @@ dependencies = [
     "python-pptx>=1.0.2",
     "pyyaml>=6.0.2",
     "semantic-text-splitter>=0.27.0",
-    "uvicorn>=0.35.0",
 ]
