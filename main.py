@@ -46,8 +46,10 @@ async def lifespan(app: FastAPI):
         """
         CREATE TABLE IF NOT EXISTS concepts (
             id TEXT PRIMARY KEY NOT NULL,
+            note_id TEXT NOT NULL,
             name TEXT NOT NULL,
             content TEXT NOT NULL
+            FOREIGN KEY(note_id) REFERENCES notes(id) ON DELETE CASCADE
         );
         """,
     )
@@ -210,7 +212,7 @@ async def process_note_into_concept(note_id: str = Path(...)):
     extracted_concepts = concept_extraction.extract_concepts(content)
 
     for name, content in extracted_concepts.items():
-        concepts.create_concept_card(connection, name, content)
+        concepts.create_concept_card(connection, note_id, name, content)
 
     db.execute_write_query(
         connection,

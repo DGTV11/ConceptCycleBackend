@@ -1,6 +1,8 @@
 import yaml
 from pocketflow import *
-from semantic_text_splitter import TextSplitter
+
+# from semantic_text_splitter import TextSplitter
+from semantic_text_splitter import MarkdownSplitter
 
 from config import CHUNK_MAX_TOKENS
 from debug import printd
@@ -129,8 +131,8 @@ extracted_concept_info: extracted info relevant to the target concept (ONE strin
 
 
 concept_update_type_switch_node = ConceptUpdateTypeSwitch()
-concept_add_node = ConceptAdd(max_retries=10)
-concept_append_node = ConceptAppend(max_retries=10)
+concept_add_node = ConceptAdd(max_retries=60, wait=5)
+concept_append_node = ConceptAppend(max_retries=60, wait=5)
 
 concept_update_type_switch_node - "add" >> concept_add_node
 concept_update_type_switch_node - "append" >> concept_append_node
@@ -143,7 +145,10 @@ batch_concept_update = BatchConceptUpdate(start=concept_update)
 class ConceptExtractor(BatchFlow):
     def prep(self, shared):
         notes = self.params["notes"]
-        splitter = TextSplitter.from_tiktoken_model("gpt-3.5-turbo", CHUNK_MAX_TOKENS)
+        # splitter = TextSplitter.from_tiktoken_model("gpt-3.5-turbo", CHUNK_MAX_TOKENS)
+        splitter = MarkdownSplitter.from_tiktoken_model(
+            "gpt-3.5-turbo", CHUNK_MAX_TOKENS
+        )
         chunks = [{"chunk": chunk} for chunk in splitter.chunks(notes)]
 
         printd(chunks)
@@ -194,7 +199,7 @@ present_concepts: list of present concept names (LIST of strings)
         shared["present_concepts"] = exec_res["present_concepts"]
 
 
-get_concept_list_node = GetConceptListFromChunk(max_retries=10)
+get_concept_list_node = GetConceptListFromChunk(max_retries=60, wait=5)
 
 get_concept_list_node >> batch_concept_update
 

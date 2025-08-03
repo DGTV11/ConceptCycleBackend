@@ -51,15 +51,15 @@ scheduler = Scheduler(
 )
 
 
-def create_concept_card(connection, name: str, content: str):
+def create_concept_card(connection, note_id: str, name: str, content: str):
     concept_id = str(uuid4())
     db.execute_write_query(
         connection,
         """
-        INSERT INTO concepts (id, name, content)
-        VALUES (?, ?, ?)
+        INSERT INTO concepts (id, note_id, name, content)
+        VALUES (?, ?, ?, ?)
         """,
-        (concept_id, name, content),
+        (concept_id, note_id, name, content),
     )
 
     card_dict = Card().to_dict()

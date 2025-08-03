@@ -15,5 +15,6 @@ dependencies = [
     "python-multipart>=0.0.20",
     "python-pptx>=1.0.2",
     "pyyaml>=6.0.2",
-    "semantic-text-splitter>=0.27.0",
+    # "semantic-text-splitter>=0.27.0",
+    "semantic-text-splitter==0.26.0",
 ]
