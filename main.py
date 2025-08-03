@@ -103,6 +103,7 @@ class TextNoteIn(BaseModel):
 
 
 class StartQuizIn(BaseModel):
+    note_ids: list[str]
     concept_limit: int
     question_limit: int
     mode: str

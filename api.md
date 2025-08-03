@@ -93,6 +93,7 @@ Start a new quiz.
 
 * **Query params**:
 
+  * `note_ids` : list[str] → list of note ids
   * `concept_limit`: int → number of concepts
   * `question_limit`: int → number of questions (must be above or equal to number of concepts)
   * `mode`: string → `"due_only" | "new_only" | "mixed"`
