@@ -232,11 +232,13 @@ async def process_note_into_concept(note_id: str = Path(...)):
 
 @app.get("/concepts")
 async def list_concepts():
-    raw_concepts = db.execute_read_query(connection, "SELECT id, name FROM concepts")
+    raw_concepts = db.execute_read_query(
+        connection, "SELECT id, note_id, name FROM concepts"
+    )
 
     concepts = []
 
-    for id, name in raw_concepts:
+    for id, note_id, name in raw_concepts:
         srs_info = db.execute_read_query(
             connection,
             """
@@ -246,15 +248,19 @@ async def list_concepts():
             """,
             (id,),
         )[0]
-        concepts.append({"id": id, "name": name, "srs_info": srs_info})
+        concepts.append(
+            {"id": id, "note_id": note_id, "name": name, "srs_info": srs_info}
+        )
 
     return concepts
 
 
 @app.get("/concepts/{concept_id}")
 async def get_concept_by_id(concept_id: str = Path(...)):
-    name, content = db.execute_read_query(
-        connection, "SELECT name, content FROM concepts WHERE id = ?", (concept_id,)
+    note_id, name, content = db.execute_read_query(
+        connection,
+        "SELECT note_id, name, content FROM concepts WHERE id = ?",
+        (concept_id,),
     )[0]
 
     srs_info = db.execute_read_query(
@@ -267,7 +273,7 @@ async def get_concept_by_id(concept_id: str = Path(...)):
         (concept_id,),
     )[0]
 
-    return {"name": name, "content": content, "srs_info": srs_info}
+    return {"note_id": note_id, "name": name, "content": content, "srs_info": srs_info}
 
 
 # *QUIZZES

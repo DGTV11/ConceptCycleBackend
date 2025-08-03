@@ -10,5 +10,10 @@ services:
             - .venv/
         - action: rebuild
           path: ./pyproject.toml
+    volumes:
+      - .:/app
+      - /app/.venv
+      # - ./.env:/app/.env
+      # - ./db.sqlite:/app/db.sqlite
     ports: 
-      - "5046:8000"
+      - "5046:5046"
