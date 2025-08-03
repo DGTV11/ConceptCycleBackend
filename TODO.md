@@ -51,4 +51,4 @@ Step 4: User may download the cheat sheet as a markdown file or pdf and the mind
 
 4. Make suitable frontend (app for prototype development TBD) **(TODO)**
 
-5. (NOT URGENT) DOCKERISE (so I can self-host on my rpi) **(TODO)**
+5. (NOT URGENT) DOCKERISE (so I can self-host on my rpi) **(DONE except for changing `fastapi dev` entrypoint to `fastapi run`)**
