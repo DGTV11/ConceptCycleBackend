@@ -1,11 +1,19 @@
-FROM ghcr.io/astral-sh/uv:python3.12-alpine
-
-RUN apk add --no-cache gcc musl-dev libgcc rust cargo
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
 ADD . /app
 
 WORKDIR /app
-RUN uv sync --locked # --compile-bytecode
 
-# CMD ["uv", "run", "fastapi", "run", "main.py"]
-CMD ["uv", "run", "fastapi", "dev", "main.py"]
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#     build-essential \
+#     gcc \
+#     pkg-config \
+#     libssl-dev \
+#     rustc \
+#     cargo \
+#  && rm -rf /var/lib/apt/lists/*
+
+RUN uv sync --locked --compile-bytecode
+
+# ENTRYPOINT ["uv", "run", "fastapi", "run", "main.py"]
+ENTRYPOINT ["uv", "run", "fastapi", "dev", "main.py"]

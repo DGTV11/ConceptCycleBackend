@@ -48,7 +48,7 @@ async def lifespan(app: FastAPI):
             id TEXT PRIMARY KEY NOT NULL,
             note_id TEXT NOT NULL,
             name TEXT NOT NULL,
-            content TEXT NOT NULL
+            content TEXT NOT NULL,
             FOREIGN KEY(note_id) REFERENCES notes(id) ON DELETE CASCADE
         );
         """,

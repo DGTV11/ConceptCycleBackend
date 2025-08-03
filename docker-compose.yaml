@@ -1,5 +1,5 @@
 services:
-  example:
+  backend:
     build: .
     develop:
       watch:
@@ -10,3 +10,5 @@ services:
             - .venv/
         - action: rebuild
           path: ./pyproject.toml
+    ports: 
+      - "5046:8000"
