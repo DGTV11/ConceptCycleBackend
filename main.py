@@ -244,6 +244,45 @@ async def process_note_into_concept(note_id: str = Path(...)):
     return {"note_id": note_id, "concepts_generated": len(extracted_concepts)}
 
 
+@app.get("/notes/{note_id}/concepts")
+async def get_concept_by_id(note_id: str = Path(...)):
+    raw_concepts = db.execute_read_query(
+        connection,
+        "SELECT id, name, content FROM concepts WHERE note_id = ?",
+        (note_id,),
+    )
+
+    concepts = []
+    for id, name, content in raw_concepts:
+        card_id, state, step, stability, difficulty, due, last_review = (
+            db.execute_read_query(
+                connection,
+                """
+            SELECT id, state, step, stability, difficulty, due, last_review
+            FROM cards
+            WHERE concept_id = ?
+            """,
+                (id,),
+            )[0]
+        )
+
+        srs_info = {
+            "id": card_id,
+            "state": state,
+            "step": step,
+            "stability": stability,
+            "difficulty": difficulty,
+            "due": due,
+            "last_review": last_review,
+        }
+
+        concepts.append(
+            {"id": id, "name": name, "content": content, "srs_info": srs_info}
+        )
+
+    return concepts
+
+
 # *CONCEPTS
 
 
@@ -256,15 +295,28 @@ async def list_concepts():
     concepts = []
 
     for id, note_id, name in raw_concepts:
-        srs_info = db.execute_read_query(
-            connection,
-            """
+        card_id, state, step, stability, difficulty, due, last_review = (
+            db.execute_read_query(
+                connection,
+                """
             SELECT id, state, step, stability, difficulty, due, last_review
             FROM cards
             WHERE concept_id = ?
             """,
-            (id,),
-        )[0]
+                (id,),
+            )[0]
+        )
+
+        srs_info = {
+            "id": card_id,
+            "state": state,
+            "step": step,
+            "stability": stability,
+            "difficulty": difficulty,
+            "due": due,
+            "last_review": last_review,
+        }
+
         concepts.append(
             {"id": id, "note_id": note_id, "name": name, "srs_info": srs_info}
         )
@@ -280,15 +332,27 @@ async def get_concept_by_id(concept_id: str = Path(...)):
         (concept_id,),
     )[0]
 
-    srs_info = db.execute_read_query(
-        connection,
-        """
+    card_id, state, step, stability, difficulty, due, last_review = (
+        db.execute_read_query(
+            connection,
+            """
         SELECT id, state, step, stability, difficulty, due, last_review
         FROM cards
         WHERE concept_id = ?
         """,
-        (concept_id,),
-    )[0]
+            (id,),
+        )[0]
+    )
+
+    srs_info = {
+        "id": card_id,
+        "state": state,
+        "step": step,
+        "stability": stability,
+        "difficulty": difficulty,
+        "due": due,
+        "last_review": last_review,
+    }
 
     return {"note_id": note_id, "name": name, "content": content, "srs_info": srs_info}
 

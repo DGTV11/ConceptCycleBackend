@@ -59,6 +59,14 @@ Process a note into concept documents.
 
 ---
 
+### `GET /notes/{note_id}/concepts`
+
+Get details of all concepts under a note.
+
+* **Response**: `[ { "id": "uuid", "name": "string", "content": "string", "srs_info": {...} } ]`
+
+---
+
 ## **Concepts**
 
 ### `GET /concepts`
