@@ -73,12 +73,28 @@ async def lifespan(app: FastAPI):
         connection,
         """
         CREATE TABLE IF NOT EXISTS review_logs (
-            id         INTEGER PRIMARY KEY,
+            id         INTEGER PRIMARY KEY NOT NULL,
             card_id    INTEGER NOT NULL,
             rating     INTEGER,
             review_datetime TEXT,
             review_duration TEXT,
             FOREIGN KEY(card_id) REFERENCES cards(id) ON DELETE CASCADE
+        );
+        """,
+    )
+
+    # *Create quizzes tables
+    db.execute_write_query(
+        connection,
+        """
+        CREATE TABLE IF NOT EXISTS review_logs (
+            id          INTEGER PRIMARY KEY NOT NULL,
+            status      TEXT NOT NULL,
+            questions   LIST(TEXT) NOT NULL,
+            answers     LIST(TEXT) NOT NULL,
+            concept_ids LIST(TEXT) NOT NULL,
+            grades      LIST(INT) DEFAULT NULL,
+            feedback    LIST(STR) DEFAULT NULL,
         );
         """,
     )

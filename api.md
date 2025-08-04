@@ -105,7 +105,7 @@ Start a new quiz.
 
 Get quiz by ID.
 
-* **Response**: `{ "id": "q1", "questions": [...], "status": "active|completed" }`
+* **Response**: `{ "id": "q1", "questions": [ { "concept_id": "c1", "question": "string", "grade": int | null , "feedback": "str" | null } ], "status": "active|completed" }`
 
 ---
 
