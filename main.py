@@ -87,14 +87,14 @@ async def lifespan(app: FastAPI):
     db.execute_write_query(
         connection,
         """
-        CREATE TABLE IF NOT EXISTS review_logs (
+        CREATE TABLE IF NOT EXISTS quizzes (
             id          INTEGER PRIMARY KEY NOT NULL,
             status      TEXT NOT NULL,
-            questions   LIST(TEXT) NOT NULL,
-            answers     LIST(TEXT) NOT NULL,
-            concept_ids LIST(TEXT) NOT NULL,
-            grades      LIST(INT) DEFAULT NULL,
-            feedback    LIST(STR) DEFAULT NULL,
+            questions   TEXT[] NOT NULL,
+            answers     TEXT[] NOT NULL,
+            concept_ids TEXT[] NOT NULL,
+            grades      INTEGER[] DEFAULT NULL,
+            feedback    TEXT[] DEFAULT NULL
         );
         """,
     )

@@ -11,7 +11,7 @@ services:
         - action: rebuild
           path: ./pyproject.toml
     volumes:
-      - .:/app
+      - .:/app:rw
       - /app/.venv
       # - ./.env:/app/.env
       # - ./db.sqlite:/app/db.sqlite

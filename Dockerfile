@@ -15,5 +15,8 @@ WORKDIR /app
 
 RUN uv sync --locked --compile-bytecode
 
-ENTRYPOINT ["uv", "run", "fastapi", "dev", "main.py", "--host", "0.0.0.0", "--port", "5046"]
+RUN chmod +x entrypoint.sh
+
+# ENTRYPOINT ["sh", "-c", "touch db.sqlite && uv run fastapi dev main.py --host 0.0.0.0 --port 5046"]
 # ENTRYPOINT ["uv", "run", "fastapi", "run", "main.py", "--host", "0.0.0.0", "--port", "5046"]
+ENTRYPOINT ["./entrypoint.sh"]
