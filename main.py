@@ -3,11 +3,10 @@ import os
 
 # from asyncio import Semaphore
 from contextlib import asynccontextmanager
-from typing import List, Optional
 from uuid import uuid4
 
 from fastapi import FastAPI, File, Form, Path, Query, UploadFile
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 import concept_extraction
 import concepts
@@ -125,9 +124,17 @@ class StartQuizIn(BaseModel):
     question_limit: int
     mode: str
 
+    @model_validator(mode="after")
+    def check_values(self):
+        if self.question_limit < self.concept_limit:
+            raise ValueError(
+                "question_limit must be greater than or equal to concept_limit"
+            )
+        return self
+
 
 class SubmitQuizIn(BaseModel):
-    responses: List[str]
+    responses: list[str]
 
 
 # *Endpoints
