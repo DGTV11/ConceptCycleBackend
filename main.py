@@ -416,21 +416,27 @@ async def get_quiz(quiz_id: str = Path(...)):
     return {
         "name": name,
         "status": status,
-        "questions": map(
-            lambda concept_id, question, grade, feedback: {
-                "concept_id": concept_id,
-                "question": question,
-                "grade": grade,
-                "feedback": feedback,
-            },
-            concept_ids_list,
-            questions_list,
-            grades_list if grades_list is not None else [None] * len(questions_list),
-            (
-                feedback_list
-                if feedback_list is not None
-                else [None] * len(questions_list)
-            ),
+        "questions": list(
+            map(
+                lambda concept_id, question, grade, feedback: {
+                    "concept_id": concept_id,
+                    "question": question,
+                    "grade": grade,
+                    "feedback": feedback,
+                },
+                concept_ids_list,
+                questions_list,
+                (
+                    grades_list
+                    if grades_list is not None
+                    else [None] * len(questions_list)
+                ),
+                (
+                    feedback_list
+                    if feedback_list is not None
+                    else [None] * len(questions_list)
+                ),
+            )
         ),
         "total_no_questions": len(questions_list),
         "total_score": None if grades_list is None else sum(grades_list),
