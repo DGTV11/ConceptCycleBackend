@@ -89,12 +89,13 @@ async def lifespan(app: FastAPI):
         """
         CREATE TABLE IF NOT EXISTS quizzes (
             id          INTEGER PRIMARY KEY NOT NULL,
+            name        TEXT NOT NULL,
             status      TEXT NOT NULL,
-            questions   TEXT[] NOT NULL,
-            answers     TEXT[] NOT NULL,
-            concept_ids TEXT[] NOT NULL,
-            grades      INTEGER[] DEFAULT NULL,
-            feedback    TEXT[] DEFAULT NULL
+            questions   TEXT NOT NULL, -- JSON string array
+            answers     TEXT NOT NULL, -- JSON string array
+            concept_ids TEXT NOT NULL, -- JSON uuid (string) array
+            grades      TEXT DEFAULT NULL, -- JSON integer array
+            feedback    TEXT DEFAULT NULL -- JSON string array
         );
         """,
     )
@@ -359,10 +360,39 @@ async def get_concept_by_id(concept_id: str = Path(...)):
 
 # *QUIZZES
 
+#     id          INTEGER PRIMARY KEY NOT NULL,
+#     name        TEXT NOT NULL,
+#     status      TEXT NOT NULL,
+#     questions   TEXT NOT NULL, -- JSON string array
+#     answers     TEXT NOT NULL, -- JSON string array
+#     concept_ids TEXT NOT NULL, -- JSON uuid (string) array
+#     grades      TEXT DEFAULT NULL, -- JSON integer array
+#     feedback    TEXT DEFAULT NULL -- JSON string array
+
 
 @app.get("/quizzes")
 async def list_quizzes():
-    pass
+    raw_quiz_data = db.execute_read_query(
+        connection,
+        "SELECT id, name, status, questions, grades FROM quizzes",
+    )
+
+    quiz_data = []
+    for id, name, status, questions, grades in quizzes:
+        questions_list = json.loads(questions)
+        grades_list = None if grades is None else json.loads(grades)
+
+        quiz_data.append(
+            {
+                "id": id,
+                "name": name,
+                "status": status,
+                "total_no_questions": len(questions_list),
+                "total_score": None if grades_list is None else sum(grades_list),
+            }
+        )
+
+    return quiz_data
 
 
 @app.post("/quizzes")
@@ -372,7 +402,39 @@ async def start_quiz(quiz_data: StartQuizIn):
 
 @app.get("/quizzes/{quiz_id}")
 async def get_quiz(quiz_id: str = Path(...)):
-    pass
+    name, status, questions, concept_ids, grades, feedback = db.execute_read_query(
+        connection,
+        "SELECT name, status, questions, concept_ids, grades, feedback FROM quizzes WHERE id = ?",
+        (quiz_id,),
+    )[0]
+
+    questions_list = json.loads(questions)
+    concept_ids_list = json.loads(concept_ids)
+    grades_list = None if grades is None else json.loads(grades)
+    feedback_list = None if grades is None else json.loads(feedback)
+
+    return {
+        "name": name,
+        "status": status,
+        "questions": map(
+            lambda concept_id, question, grade, feedback: {
+                "concept_id": concept_id,
+                "question": question,
+                "grade": grade,
+                "feedback": feedback,
+            },
+            concept_ids_list,
+            questions_list,
+            grades_list if grades_list is not None else [None] * len(questions_list),
+            (
+                feedback_list
+                if feedback_list is not None
+                else [None] * len(questions_list)
+            ),
+        ),
+        "total_no_questions": len(questions_list),
+        "total_score": None if grades_list is None else sum(grades_list),
+    }
 
 
 @app.post("/quizzes/{quiz_id}/submit")

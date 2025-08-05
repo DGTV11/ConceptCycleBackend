@@ -91,7 +91,7 @@ Get details of a concept.
 
 List all quizzes (past + active).
 
-* **Response**: `[ { "id": "q1", "created": "timestamp", "status": "active|completed" } ]`
+* **Response**: `[ { "id": "q1", "name": "string", "status": "active|completed", "total_no_questions": int, "total_score": int | null } ]`
 
 ---
 
@@ -105,7 +105,7 @@ Start a new quiz.
   * `concept_limit`: int → number of concepts
   * `question_limit`: int → number of questions (must be above or equal to number of concepts)
   * `mode`: string → `"due_only" | "new_only" | "mixed"`
-* **Response**: `{ "id": "q1", "questions": [ { "concept_id": "c1", "question": "string" } ] }`
+* **Response**: `{ "id": "q1", "questions": [ { "concept_id": "c1", "question": "string" } ], "total_no_questions": int }`
 
 ---
 
@@ -113,7 +113,7 @@ Start a new quiz.
 
 Get quiz by ID.
 
-* **Response**: `{ "id": "q1", "questions": [ { "concept_id": "c1", "question": "string", "grade": int | null , "feedback": "str" | null } ], "status": "active|completed" }`
+* **Response**: `{ "name": "string", "status": "active|completed", "questions": [ { "concept_id": "c1", "question": "string", "grade": int | null , "feedback": "str" | null } ], "total_no_questions": int, "total_score": int | null }`
 
 ---
 
