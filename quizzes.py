@@ -27,7 +27,7 @@ from llm import call_llm
 
 
 def create_quiz_from_note(connection, note_ids, concept_limit, question_limit):
-    concepts = []
+    concepts = {}
 
     for note_id in note_ids:
         raw_concepts = db.execute_read_query(
@@ -58,14 +58,30 @@ def create_quiz_from_note(connection, note_ids, concept_limit, question_limit):
                 "last_review": last_review,
             }
 
-            concepts.append(
-                {"id": id, "name": name, "content": content, "srs_info": srs_info}
-            )
+            concepts[id] = {
+                "name": name,
+                "content": content,
+                "srs_info": srs_info,
+            }
 
-    concepts.sort(
+    concepts = sorted(
+        concepts.items(),
         key=lambda concept: (
             0
-            if not concept["srs_info"]["stability"]
-            else concept["srs_info"]["stability"]
-        )
-    )  # *Prioritises low stability for review
+            if not concept[1]["srs_info"]["stability"]
+            else concept[1]["srs_info"]["stability"]
+        ),  # *Prioritises low stability for review
+    )[
+        :concept_limit
+    ]  # * Trim sorted concept list (or queue) to concept_limit
+
+    concepts_dict = dict(concepts)
+
+    quiz_concept_counts = {}
+
+    no_questions = 0
+    while no_questions < question_limit:
+        question_cids[concepts[no_questions][0]] += 1
+        no_questions += 1
+
+    # *TODO: make actual question generator
