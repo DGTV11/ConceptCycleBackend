@@ -104,7 +104,7 @@ Start a new quiz.
   * `note_ids` : list[str] → list of note ids
   * `concept_limit`: int → number of concepts
   * `question_limit`: int → number of questions (must be above or equal to number of concepts)
-  * `mode`: string → `"due_only" | "new_only" | "mixed"`
+  * `mode`: string → `"due_only" | "learning_only" | "new_only" | "mixed"`
 * **Response**: `{ "id": "q1", "questions": [ { "concept_id": "c1", "question": "string" } ], "total_no_questions": int }`
 
 ---

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import yaml
 from pocketflow import *
 
@@ -27,8 +29,8 @@ from llm import call_llm
 
 
 def create_quiz_from_note(
-    connection, note_ids, concept_limit, question_limit
-):  # *TODO: add mode selector (mode -> "due_only" | "new_only" | "mixed")
+    connection, note_ids, concept_limit, question_limit, mode
+):  # *TODO: add mode selector (mode -> "due_only" | "learning_only" | "new_only" | "mixed")
     concepts = {}
 
     for note_id in note_ids:
@@ -60,11 +62,37 @@ def create_quiz_from_note(
                 "last_review": last_review,
             }
 
-            concepts[id] = {
-                "name": name,
-                "content": content,
-                "srs_info": srs_info,
-            }
+            match mode:
+                case "due_only":
+                    due_datetime = datetime.fromisoformat(due)
+                    if last_review is not None and due_datetime <= datetime.now():
+                        concepts[id] = {
+                            "name": name,
+                            "content": content,
+                            "srs_info": srs_info,
+                        }
+                case "learning_only":
+                    if last_review is not None:
+                        concepts[id] = {
+                            "name": name,
+                            "content": content,
+                            "srs_info": srs_info,
+                        }
+                case "new_only":
+                    if last_review is None:
+                        concepts[id] = {
+                            "name": name,
+                            "content": content,
+                            "srs_info": srs_info,
+                        }
+                case "mixed":
+                    concepts[id] = {
+                        "name": name,
+                        "content": content,
+                        "srs_info": srs_info,
+                    }
+                case _:
+                    raise ValueError("Invalid mode")
 
     concepts = sorted(
         concepts.items(),

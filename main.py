@@ -410,6 +410,7 @@ async def start_quiz(quiz_data: StartQuizIn):
         quiz_data.note_ids,
         quiz_data.concept_limit,
         quiz_data.question_limit,
+        quiz_data.mode,
     )
 
 
