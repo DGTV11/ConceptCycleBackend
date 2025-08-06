@@ -348,7 +348,7 @@ async def get_concept_by_id(concept_id: str = Path(...)):
         FROM cards
         WHERE concept_id = ?
         """,
-            (id,),
+            (concept_id,),
         )[0]
     )
 
