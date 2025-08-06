@@ -12,6 +12,7 @@ import concept_extraction
 import concepts
 import db
 import notes
+import quizzes
 
 # * Context manager
 
@@ -404,7 +405,12 @@ async def list_quizzes():
 
 @app.post("/quizzes")
 async def start_quiz(quiz_data: StartQuizIn):
-    pass
+    return quizzes.create_quiz_from_note(
+        connection,
+        quiz_data.note_ids,
+        quiz_data.concept_limit,
+        quiz_data.question_limit,
+    )
 
 
 @app.get("/quizzes/{quiz_id}")
