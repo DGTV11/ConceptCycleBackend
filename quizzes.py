@@ -26,7 +26,9 @@ from llm import call_llm
 # *QUIZ GRADER
 
 
-def create_quiz_from_note(connection, note_ids, concept_limit, question_limit):
+def create_quiz_from_note(
+    connection, note_ids, concept_limit, question_limit
+):  # *TODO: add mode selector (mode -> "due_only" | "new_only" | "mixed")
     concepts = {}
 
     for note_id in note_ids:
