@@ -253,7 +253,7 @@ async def process_note_into_concept(note_id: str = Path(...)):
 
 
 @app.get("/notes/{note_id}/concepts")
-async def get_concept_by_id(note_id: str = Path(...)):
+async def get_concepts_by_note(note_id: str = Path(...)):
     raw_concepts = db.execute_read_query(
         connection,
         "SELECT id, name, content FROM concepts WHERE note_id = ?",
