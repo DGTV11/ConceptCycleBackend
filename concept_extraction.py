@@ -207,6 +207,7 @@ concept_extractor_chunk_flow = Flow(start=get_concept_list_node)
 concept_extractor_batch_flow = ConceptExtractor(start=concept_extractor_chunk_flow)
 
 
+# *Functions
 def extract_concepts(notes: str):
     shared = {"concept_dict": {}}
     concept_extractor_batch_flow.set_params({"notes": notes})
