@@ -55,7 +55,7 @@ Analyse the chunk to pick out which part of the chunk is relevant to the target 
 You will then give distilled succinct statements, assertions, associations, concepts, analogies, and metaphors. 
 The idea is to capture as much, conceptually, as possible but with as few words as possible. 
 Write it in a way that makes sense to you, as the future audience will be another language model, not a human.
-Output in yaml:
+Output in yaml (including starting "```yaml" and closing "```" at start and end of your response respectively):
 ```yaml
 analysis: detailed step-by-step analysis of chunk (ONE string)
 extracted_concept_info: extracted info relevant to the target concept (ONE string)
@@ -105,7 +105,7 @@ You will then give distilled succinct statements, assertions, associations, conc
 The idea is to capture as much, conceptually, as possible but with as few words as possible. 
 Write it in a way that makes sense to you, as the future audience will be another language model, not a human.
 Ensure that no already present information is appended to the extracted concept info.
-Output in yaml:
+Output in yaml (including starting "```yaml" and closing "```" at start and end of your response respectively):
 ```yaml
 analysis: detailed step-by-step analysis of chunk (ONE string)
 extracted_concept_info: extracted info relevant to the target concept (ONE string)
@@ -176,7 +176,7 @@ Each concept should be bite-sized, constituting ONE DISTINCT learning outcome wh
 Concept names should be succinct yet accurately describe the content of the concept by being framed as a concise learning outcome.
 If a concept overlaps with a previously extracted concept, use the EXACT SAME concept name to ensure that there are NO duplicate concepts.
 If you observe no concepts in the chunk, you may generate an empty list for present_concepts.
-Output in yaml:
+Output in yaml (including starting "```yaml" and closing "```" at start and end of your response respectively):
 ```yaml
 analysis: detailed step-by-step analysis of chunk (ONE string)
 present_concepts: list of present concept names (LIST of strings)

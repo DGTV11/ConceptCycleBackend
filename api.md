@@ -105,7 +105,7 @@ Start a new quiz.
   * `concept_limit`: int → number of concepts
   * `question_limit`: int → number of questions (must be above or equal to number of concepts)
   * `mode`: string → `"due_only" | "learning_only" | "new_only" | "mixed"`
-* **Response**: `{ "id": "q1", "questions": [ { "concept_id": "c1", "question": "string" } ], "total_no_questions": int }`
+* **Response**: `{ "id": "q1", "name": "string", "questions": [ { "concept_id": "c1", "question": "string" } ], "total_no_questions": int }`
 
 ---
 

@@ -8,6 +8,7 @@ from config import (
     VLM_API_KEY,
     VLM_NAME,
 )
+from debug import printd
 
 llm_client = OpenAI(base_url=LLM_API_BASE_URL, api_key=LLM_API_KEY)
 vlm_client = OpenAI(base_url=VLM_API_BASE_URL, api_key=VLM_API_KEY)
@@ -24,6 +25,7 @@ def call_llm(prompt):
             {"role": "user", "content": prompt},
         ],
     )
+    # printd(prompt + "," + completion.choices[0].message.content)
 
     return completion.choices[0].message.content
 
@@ -48,5 +50,7 @@ def call_vlm(prompt, b64_image, img_type="jpeg"):
             },
         ],
     )
+
+    # printd(prompt + "," + completion.choices[0].message.content)
 
     return completion.choices[0].message.content

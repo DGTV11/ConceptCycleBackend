@@ -88,7 +88,7 @@ async def lifespan(app: FastAPI):
         connection,
         """
         CREATE TABLE IF NOT EXISTS quizzes (
-            id          INTEGER PRIMARY KEY NOT NULL,
+            id          TEXT PRIMARY KEY NOT NULL,
             name        TEXT NOT NULL,
             status      TEXT NOT NULL,
             questions   TEXT NOT NULL, -- JSON string array
