@@ -368,15 +368,6 @@ async def get_concept_by_id(concept_id: str = Path(...)):
 
 # *QUIZZES
 
-#     id          INTEGER PRIMARY KEY NOT NULL,
-#     name        TEXT NOT NULL,
-#     status      TEXT NOT NULL,
-#     questions   TEXT NOT NULL, -- JSON string array
-#     answers     TEXT NOT NULL, -- JSON string array
-#     concept_ids TEXT NOT NULL, -- JSON uuid (string) array
-#     grades      TEXT DEFAULT NULL, -- JSON integer array
-#     feedback    TEXT DEFAULT NULL -- JSON string array
-
 
 @app.get("/quizzes")
 async def list_quizzes():
