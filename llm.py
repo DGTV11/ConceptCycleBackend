@@ -22,7 +22,7 @@ def call_llm(prompt):
                 "role": "system",
                 "content": "Always assist with care, respect, and truth. Respond with utmost utility yet securely. Avoid harmful, unethical, prejudiced, or negative content. Ensure replies promote fairness and positivity.",  # *https://www.promptingguide.ai/models/mixtral#system-prompt-to-enforce-guardrails
             },
-            {"role": "user", "content": prompt},
+            {"role": "user", "content": prompt.strip()},
         ],
     )
     # printd(prompt + "," + completion.choices[0].message.content)
@@ -41,7 +41,7 @@ def call_vlm(prompt, b64_image, img_type="jpeg"):
             {
                 "role": "user",
                 "content": [
-                    {"type": "input_text", "text": prompt},
+                    {"type": "input_text", "text": prompt.strip()},
                     {
                         "type": "input_image",
                         "image_url": f"data:image/{img_type};base64,{b64_image}",
