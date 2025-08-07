@@ -386,7 +386,7 @@ async def list_quizzes():
     )
 
     quiz_data = []
-    for id, name, status, questions, grades in quizzes:
+    for id, name, status, questions, grades in raw_quiz_data:
         questions_list = json.loads(questions)
         grades_list = None if grades is None else json.loads(grades)
 
