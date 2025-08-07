@@ -459,4 +459,8 @@ async def get_quiz_by_id(quiz_id: str = Path(...)):
 
 @app.post("/quizzes/{quiz_id}/submit")
 async def submit_quiz(quiz_id: str = Path(...), submit_data: SubmitQuizIn = None):
-    pass
+    return quizzes.submit_quiz(
+        connection,
+        quiz_data.quiz_id,
+        quiz_data.submit_data.responses,
+    )
