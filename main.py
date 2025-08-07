@@ -415,7 +415,7 @@ async def start_quiz(quiz_data: StartQuizIn):
 
 
 @app.get("/quizzes/{quiz_id}")
-async def get_quiz(quiz_id: str = Path(...)):
+async def get_quiz_by_id(quiz_id: str = Path(...)):
     name, status, questions, concept_ids, grades, feedback = db.execute_read_query(
         connection,
         "SELECT name, status, questions, concept_ids, grades, feedback FROM quizzes WHERE id = ?",
