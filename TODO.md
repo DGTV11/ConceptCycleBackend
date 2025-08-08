@@ -43,13 +43,13 @@ Step 4: User may download the cheat sheet as a markdown file or pdf and the mind
 3. Make API using FastAPI and pocketflow (using stuff like ChromaDB and OpenAI)
 
 - design API interface **(DONE)**
-- design prompts and Flows **(TODO)**
+- design prompts and Flows **(DONE)**
     - concept extractor **(DONE)**
-    - quiz generator **(TODO)**
-    - quiz grader + SRS update system **(TODO)**
+    - quiz generator **(DONE)**
+    - quiz grader + SRS update system **(DONE)**
 - (OPTIONAL because LAZY) implement authentication (https://medium.com/@wangarraakoth/user-authentication-in-fastapi-using-python-3b51af11b38d)
 
 4. Make suitable frontend (app for prototype development TBD) **(TODO)**
     - not rlly DGTV11's problem but can do if necessary
 
-5. (NOT URGENT) DOCKERISE (so I can self-host on my rpi) **(DONE except for changing `fastapi dev` entrypoint to `fastapi run`)**
+5. (NOT URGENT) DOCKERISE (so I can self-host on my rpi) **(DONE)**
