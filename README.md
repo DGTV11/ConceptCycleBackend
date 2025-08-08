@@ -13,11 +13,12 @@ OR
 git clone https://github.com/DGTV11/AIStudyBuddyBackend.git
 ```
 
-2. Install dependencies
-```bash
-pip install uv
-uv sync
-```
+<!-- 2. Install dependencies -->
+<!-- ```bash -->
+<!-- pip install uv -->
+<!-- uv sync -->
+<!-- ``` -->
+2. Install Docker and Docher Compose
 
 3. Add `.env` file to directory and configure
 ```env
@@ -32,16 +33,25 @@ DEBUG_MODE=<fill me>
 ```
 
 3. Run server
+<!-- ```bash -->
+<!-- uv run fastapi dev --port=5046 -->
+<!-- ``` -->
+<!---->
+<!-- OR -->
+<!---->
+<!-- ```bash -->
+<!-- uv run fastapi run --port=5046 -->
+<!-- ``` -->
 ```bash
-uv run fastapi dev --port=5046
+docker compose up
 ```
 
 OR
 
 ```bash
-uv run fastapi run --port=5046
+docker compose up -d
 ```
 
 ## Notes
 
-I recommend unit testing endpoints using ![httpie](https://httpie.io/) for sanity reasons
+I recommend testing endpoints using ![httpie](https://httpie.io/) for sanity reasons
