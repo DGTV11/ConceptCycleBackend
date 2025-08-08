@@ -1,6 +1,6 @@
 # AI Study Buddy Backend
 
-## Install
+## Basic deployment
 
 1. Clone repo
 ```bash
@@ -54,4 +54,12 @@ docker compose up -d
 
 ## Notes
 
-I recommend testing endpoints using ![httpie](https://httpie.io/) for sanity reasons
+- I recommend testing endpoints using ![httpie](https://httpie.io/) for sanity reasons
+- You should use this API with conjunction with a suitable frontend
+- API recommended usage:
+    1) `POST /notes` or `POST /notes/text` (make notes) 
+    2) `POST /notes/{note_id}/process` (process notes into concepts) 
+    3) Go back to step 1 to add more notes and repeat as needed
+    4) `POST /quizzes` (start quiz based on concepts attached to input notes) 
+    5) `POST /quizzes/{quiz_id}/submit` (submit quiz)
+    6) Go back to step 4 to make new quiz or go back to step 1 to add more notes and repeat as needed
