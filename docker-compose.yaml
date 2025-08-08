@@ -1,19 +1,14 @@
 services:
   backend:
     build: .
-    develop:
-      watch:
-        # - action: sync
-        #   path: .
-        #   target: /app
-        #   ignore:
-        #     - .venv/
-        - action: rebuild
-          path: ./pyproject.toml
+    # develop:
+      # watch:
+        # - action: rebuild
+        #   path: ./pyproject.toml
     volumes:
-      - .:/app:rw
-      - /app/.venv
-      # - ./.env:/app/.env
-      # - ./db.sqlite:/app/db.sqlite
+      # - .:/app:rw
+      # - /app/.venv
+      - ./.env:/app/.env
+      - ./db.sqlite:/app/db.sqlite
     ports: 
       - "5046:5046"
