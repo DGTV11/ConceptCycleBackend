@@ -1,16 +1,16 @@
-# AI Study Buddy Backend
+# ConceptCycle Backend
 
 ## Basic deployment
 
 1. Clone repo
 ```bash
-git clone git@github.com:DGTV11/AIStudyBuddyBackend.git
+git clone git@github.com:DGTV11/ConceptCycleBackend.git
 ```
 
 OR 
 
 ```bash
-git clone https://github.com/DGTV11/AIStudyBuddyBackend.git
+git clone https://github.com/DGTV11/ConceptCycleBackend.git
 ```
 
 <!-- 2. Install dependencies -->

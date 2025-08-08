@@ -1,7 +1,7 @@
 [project]
-name = "aistudybuddybackend"
+name = "concept-cycle-backend"
 version = "0.1.0"
-description = "Add your description here"
+description = "Backend logic for ConceptCycle"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
