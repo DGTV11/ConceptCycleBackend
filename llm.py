@@ -25,7 +25,7 @@ def call_llm(prompt):
             {"role": "user", "content": prompt.strip()},
         ],
     )
-    # printd(prompt + "," + completion.choices[0].message.content)
+    # printd(prompt.strip() + "," + completion.choices[0].message.content)
 
     return completion.choices[0].message.content
 
@@ -51,6 +51,6 @@ def call_vlm(prompt, b64_image, img_type="jpeg"):
         ],
     )
 
-    # printd(prompt + "," + completion.choices[0].message.content)
+    # printd(prompt.strip() + "," + completion.choices[0].message.content)
 
     return completion.choices[0].message.content

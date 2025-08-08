@@ -133,10 +133,8 @@ Submit answers for a quiz.
 
 ```json
 {
-  "id": "q1",
-  "feedback": [...],
-  "updated_concepts": [
-    { "id": "c1", "next_due": "timestamp", "interval": 3 }
-  ]
+  "grades": [ int ],
+  "feedback": [ "feedback" ],
+  "total_score": int
 }
 ```

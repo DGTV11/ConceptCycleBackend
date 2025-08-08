@@ -5,7 +5,7 @@ import os
 from contextlib import asynccontextmanager
 from uuid import uuid4
 
-from fastapi import FastAPI, File, Form, Path, Query, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Path, Query, UploadFile
 from pydantic import BaseModel, model_validator
 
 import concept_extraction
@@ -60,7 +60,7 @@ async def lifespan(app: FastAPI):
             id INTEGER PRIMARY KEY NOT NULL,
             concept_id TEXT NOT NULL,
             state TEXT,
-            step TEXT,
+            step INTEGER,
             stability REAL,
             difficulty REAL,
             due TEXT,
@@ -73,7 +73,7 @@ async def lifespan(app: FastAPI):
         connection,
         """
         CREATE TABLE IF NOT EXISTS review_logs (
-            id         INTEGER PRIMARY KEY NOT NULL,
+            id         TEXT PRIMARY KEY NOT NULL,
             card_id    INTEGER NOT NULL,
             rating     INTEGER,
             review_datetime TEXT,
@@ -94,6 +94,7 @@ async def lifespan(app: FastAPI):
             questions   TEXT NOT NULL, -- JSON string array
             answers     TEXT NOT NULL, -- JSON string array
             concept_ids TEXT NOT NULL, -- JSON uuid (string) array
+            responses   TEXT DEFAULT NULL, -- JSON string array
             grades      TEXT DEFAULT NULL, -- JSON integer array
             feedback    TEXT DEFAULT NULL -- JSON string array
         );
@@ -185,7 +186,7 @@ async def list_notes():
 
 @app.get("/notes/{note_id}")
 async def get_note_by_id(note_id: str = Path(...)):
-    name, content, status = db.execute_read_query(
+    result = db.execute_read_query(
         connection,
         """
         SELECT name, content, status 
@@ -193,13 +194,26 @@ async def get_note_by_id(note_id: str = Path(...)):
         WHERE id = ?
         """,
         (note_id,),
-    )[0]
+    )
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Note not found")
+    name, content, status = result[0]
 
     return {"name": name, "content": content, "status": status}
 
 
 @app.delete("/notes/{note_id}")
 async def delete_note_by_id(note_id: str = Path(...)):
+    exists = db.execute_read_query(
+        connection,
+        "SELECT 1 FROM notes WHERE id = ?",
+        (note_id,),
+    )
+
+    if not exists:
+        raise HTTPException(status_code=404, detail="Note not found")
+
     db.execute_write_query(
         connection,
         "DELETE FROM notes WHERE id = ?",
@@ -210,14 +224,21 @@ async def delete_note_by_id(note_id: str = Path(...)):
 
 @app.post("/notes/{note_id}/process")
 async def process_note_into_concept(note_id: str = Path(...)):
-    status = db.execute_read_query(
+    result = db.execute_read_query(
         connection,
         "SELECT status FROM notes WHERE id = ?",
         (note_id,),
-    )[0][0]
+    )
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Note not found")
+    status = result[0][0]
 
     if status in ["processing", "processed"]:
-        return {"error": "Note is already being processed or has been processed"}
+        raise HTTPException(
+            status_code=409,
+            detail="Note is already being processed or has been processed",
+        )
 
     db.execute_write_query(
         connection,
@@ -255,6 +276,15 @@ async def process_note_into_concept(note_id: str = Path(...)):
 
 @app.get("/notes/{note_id}/concepts")
 async def get_concepts_by_note(note_id: str = Path(...)):
+    exists = db.execute_read_query(
+        connection,
+        "SELECT 1 FROM notes WHERE id = ?",
+        (note_id,),
+    )
+
+    if not exists:
+        raise HTTPException(status_code=404, detail="Note not found")
+
     raw_concepts = db.execute_read_query(
         connection,
         "SELECT id, name, content FROM concepts WHERE note_id = ?",
@@ -335,11 +365,15 @@ async def list_concepts():
 
 @app.get("/concepts/{concept_id}")
 async def get_concept_by_id(concept_id: str = Path(...)):
-    note_id, name, content = db.execute_read_query(
+    result = db.execute_read_query(
         connection,
         "SELECT note_id, name, content FROM concepts WHERE id = ?",
         (concept_id,),
-    )[0]
+    )
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Concept not found")
+    note_id, name, content = result[0]
 
     card_id, state, step, stability, difficulty, due, last_review = (
         db.execute_read_query(
@@ -407,14 +441,19 @@ async def start_quiz(quiz_data: StartQuizIn):
 
 @app.get("/quizzes/{quiz_id}")
 async def get_quiz_by_id(quiz_id: str = Path(...)):
-    name, status, questions, concept_ids, grades, feedback = db.execute_read_query(
+    result = db.execute_read_query(
         connection,
-        "SELECT name, status, questions, concept_ids, grades, feedback FROM quizzes WHERE id = ?",
+        "SELECT name, status, questions, concept_ids, responses, grades, feedback FROM quizzes WHERE id = ?",
         (quiz_id,),
-    )[0]
+    )
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Quiz not found")
+    name, status, questions, concept_ids, responses, grades, feedback = result[0]
 
     questions_list = json.loads(questions)
     concept_ids_list = json.loads(concept_ids)
+    responses_list = None if responses is None else json.loads(responses)
     grades_list = None if grades is None else json.loads(grades)
     feedback_list = None if grades is None else json.loads(feedback)
 
@@ -423,14 +462,20 @@ async def get_quiz_by_id(quiz_id: str = Path(...)):
         "status": status,
         "questions": list(
             map(
-                lambda concept_id, question, grade, feedback: {
+                lambda concept_id, question, response, grade, feedback: {
                     "concept_id": concept_id,
                     "question": question,
+                    "response": response,
                     "grade": grade,
                     "feedback": feedback,
                 },
                 concept_ids_list,
                 questions_list,
+                (
+                    responses_list
+                    if responses_list is not None
+                    else [None] * len(questions_list)
+                ),
                 (
                     grades_list
                     if grades_list is not None
@@ -450,8 +495,20 @@ async def get_quiz_by_id(quiz_id: str = Path(...)):
 
 @app.post("/quizzes/{quiz_id}/submit")
 async def submit_quiz(quiz_id: str = Path(...), submit_data: SubmitQuizIn = None):
+    result = db.execute_read_query(
+        connection,
+        "SELECT status FROM quizzes WHERE id = ?",
+        (quiz_id,),
+    )
+
+    if not result:
+        raise HTTPException(status_code=404, detail="Quiz not found")
+
+    if result[0][0] == "completed":
+        raise HTTPException(status_code=409, detail="Quiz has already been completed")
+
     return quizzes.submit_quiz(
         connection,
-        quiz_data.quiz_id,
-        quiz_data.submit_data.responses,
+        quiz_id,
+        submit_data.responses,
     )
