@@ -32,7 +32,12 @@ CHUNK_MAX_TOKENS=<fill me>
 DEBUG_MODE=<fill me>
 ```
 
-3. Run server
+3. Ensure `.env` and `db.sqlite` files exist
+```sh
+touch .env db.sqlite
+```
+
+4. Run server
 <!-- ```bash -->
 <!-- uv run fastapi dev --port=5046 -->
 <!-- ``` -->
