@@ -1,5 +1,5 @@
 [project]
-name = "concept-cycle-backend"
+name = "conceptcycle-backend"
 version = "0.1.0"
 description = "Backend logic for ConceptCycle"
 readme = "README.md"
