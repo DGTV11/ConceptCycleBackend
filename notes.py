@@ -1,6 +1,5 @@
 import base64
 from io import BytesIO
-from tempfile import SpooledTemporaryFile
 
 import fitz
 from docx import Document
@@ -27,18 +26,18 @@ Render the input as a distilled list of succinct statements, assertions, associa
 
 
 def process_file(
-    file: SpooledTemporaryFile, filename: str, content_type: str
+    file: bytes, filename: str, content_type: str
 ):  # txt/md, images, pptx, word, pdf
     match content_type:
         case "txt":  # *applies for markdown obviously since its just txt
             # To read a FastAPI SpooledTemporaryFile (which is the underlying file object of an UploadFile) as text, the recommended approach is to use io.TextIOWrapper for proper encoding handling.
-            return file.read().decode("utf-8")
+            return file.decode("utf-8")
         case "png":
-            return call_vlm(base64.b64encode(file.read()).decode("utf-8"), "png")
+            return call_vlm(base64.b64encode(file).decode("utf-8"), "png")
         case "jpeg":
-            return call_vlm(base64.b64encode(file.read()).decode("utf-8"), "jpeg")
+            return call_vlm(base64.b64encode(file).decode("utf-8"), "jpeg")
         case "pptx":
-            slides = Presentation(BytesIO(file.read())).slides
+            slides = Presentation(BytesIO(file)).slides
 
             slides_notes = ""
             for slide in enumerate(slides, start=1):
@@ -59,7 +58,7 @@ def process_file(
 
             return slides_notes
         case "docx":
-            doc = Document(BytesIO(file.read()))
+            doc = Document(BytesIO(file))
             docx_notes = ""
 
             for para in doc.paragraphs:
@@ -93,7 +92,7 @@ def process_file(
 
             return docx_notes
         case "pdf":
-            doc = fitz.open("pdf", file.read())
+            doc = fitz.open("pdf", file)
             pdf_notes = ""
             for page in doc:
                 pdf_notes += page.get_text("text") + "\n"
