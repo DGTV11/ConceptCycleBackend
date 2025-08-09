@@ -113,7 +113,7 @@ Start a new quiz.
 
 Get quiz by ID.
 
-* **Response**: `{ "name": "string", "status": "active|completed", "questions": [ { "concept_id": "c1", "question": "string", "grade": int | null , "feedback": "str" | null } ], "total_no_questions": int, "total_score": int | null }`
+* **Response**: `{ "name": "string", "status": "active|completed", "questions": [ { "concept_id": "c1", "question": "string", "response": "str" | null, "grade": int | null , "feedback": "str" | null } ], "total_no_questions": int, "total_score": int | null }`
 
 ---
 
