@@ -40,7 +40,7 @@ def process_file(
             slides = Presentation(BytesIO(file)).slides
 
             slides_notes = ""
-            for slide in enumerate(slides, start=1):
+            for slide in slides:
                 for shape in slide.shapes:
                     if hasattr(shape, "text"):
                         slides_notes += shape.text + "\n"
@@ -63,17 +63,20 @@ def process_file(
 
             for para in doc.paragraphs:
                 for run in para.runs:
-                    # --- If it's plain text ---
                     if run.text:
                         docx_notes += run.text
 
-                    # --- If run contains an image ---
                     drawing_elems = run._element.findall(
                         ".//w:drawing", namespaces=run._element.nsmap
                     )
                     for drawing in drawing_elems:
-                        # Each drawing contains a blip reference to the image
-                        blip = drawing.find(".//a:blip", namespaces=drawing.nsmap)
+                        namespaces = drawing.nsmap.copy() if drawing.nsmap else {}
+                        if "a" not in namespaces:
+                            namespaces["a"] = (
+                                "http://schemas.openxmlformats.org/drawingml/2006/main"
+                            )
+
+                        blip = drawing.find(".//a:blip", namespaces=namespaces)
                         if blip is not None:
                             embed_rid = blip.get(qn("r:embed"))
                             image_part = doc.part.related_parts[embed_rid]
@@ -81,14 +84,13 @@ def process_file(
                             blob = image_part.blob
                             content_type = image_part.content_type  # e.g. image/png
 
-                            # Insert the "processed image" inline
                             docx_notes += (
                                 "\n===IMAGE START===\n"
                                 + call_vlm(blob, content_type.replace("image/", ""))
                                 + "\n===IMAGE END===\n"
                             )
 
-                docx_notes += "\n"  # end of paragraph
+                docx_notes += "\n"
 
             return docx_notes
         case "pdf":
@@ -101,10 +103,11 @@ def process_file(
                     xref = img[0]
                     base_image = doc.extract_image(xref)
                     blob = base_image["image"]
+                    b64_blob = base64.b64encode(blob).decode("utf-8")
                     ext = base_image["ext"]
                     pdf_notes += (
                         "\n===IMAGE START===\n"
-                        + call_vlm(blob, ext)
+                        + call_vlm(b64_blob, ext)
                         + "\n===IMAGE END===\n"
                     )
             return pdf_notes
