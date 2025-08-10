@@ -3,6 +3,7 @@ from io import BytesIO
 
 import fitz
 from docx import Document
+from docx.oxml.ns import qn
 from pptx import Presentation
 
 from llm import call_vlm
