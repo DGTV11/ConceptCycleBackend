@@ -50,7 +50,7 @@ def process_file(
                             "\n"
                             + "===IMAGE START==="
                             + call_vlm(
-                                shape.image.blob,
+                                base64.b64encode(shape.image.blob).decode("utf-8"),
                                 shape.image.content_type.replace("image/", ""),
                             )
                             + "===IMAGE END==="
@@ -83,11 +83,12 @@ def process_file(
                             image_part = doc.part.related_parts[embed_rid]
 
                             blob = image_part.blob
+                            b64_blob = base64.b64encode(blob).decode("utf-8")
                             content_type = image_part.content_type  # e.g. image/png
 
                             docx_notes += (
                                 "\n===IMAGE START===\n"
-                                + call_vlm(blob, content_type.replace("image/", ""))
+                                + call_vlm(b64_blob, content_type.replace("image/", ""))
                                 + "\n===IMAGE END===\n"
                             )
 
