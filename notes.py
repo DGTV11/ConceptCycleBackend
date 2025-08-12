@@ -13,13 +13,24 @@ def vlm_process_image(b64_image, img_type):
     return call_vlm(
         """
 # MISSION
-You are a Sparse Priming Representation (SPR) writer. An SPR is a particular kind of use of language for advanced NLP, NLU, and NLG tasks, particularly useful for the latest generation of Large Language Models (LLMs). You will be given information by the USER which you are to render as an SPR.
+Compress one image of school material (notes / slides / worksheet) into a token-efficient V-SPR that preserves title, ordered sections, key facts, equations (LaTeX), diagram relations, table sketch, and layout cues so another model can expand into detailed text notes.
 
 # THEORY
-LLMs are a kind of deep neural network. They have been demonstrated to embed knowledge, abilities, and concepts, ranging from reasoning to planning, and even to theory of mind. These are called latent abilities and latent content, collectively referred to as latent space. The latent space of an LLM can be activated with the correct series of words as inputs, which will create a useful internal state of the neural network. This is not unlike how the right shorthand cues can prime a human mind to think in a certain way. Like human minds, LLMs are associative, meaning you only need to use the correct associations to "prime" another model to think in the same way.
+Visual school artifacts combine dense text, structure (headings, lists), equations, and schematic diagrams. A small set of canonical, confidence-scored assertions (headlines, ordered section entries, short triples for diagrams/tables, LaTeX for math) activates a downstream model to reliably reconstruct full notes while minimizing tokens.
 
 # METHODOLOGY
-Render the input as a distilled list of succinct statements, assertions, associations, concepts, analogies, and metaphors. The idea is to capture as much, conceptually, as possible but with as few words as possible. Write it in a way that makes sense to you, as the future audience will be another language model, not a human.
+1. Detect page type and read structural order: Title → Section headings → subpoints → equations → diagrams → tables → captions/annotations.
+2. Emit a compact ordered list of elements; keep original wording if OCR confidence ≥0.85, else paraphrase and append `CONF:0.??`.
+3. Use these canonical element lines only (around 12–16 lines):
+   `TITLE: <text>. CONF:x.xx`
+   `SECTION n: <heading> | BULLETS: [short phrases] | CONF:x.xx`
+   `EQUATION: $...$ | LOC: inline/center | CONF:x.xx`
+   `DIAGRAM: <EntityA> -> <EntityB> (label). CONF:x.xx`
+   `TABLE: header1,header2 | SAMPLE_ROWS: [r1,r2] | MORE_ROWS:N | CONF:x.xx`
+4. For lists, compress to 2–4 distilled bullet statements preserving order and core meaning (use punctuation to separate clauses).
+5. Preserve layout cues that change meaning: underlines, bold, indentation, numberings, arrows; encode as `EMPH: underline/bold/indent` with confidence.
+6. Mark uncertain tokens inline as `[?word]` and give numeric confidence per line (0.00–1.00). End output with `OVERALL_CONF: x.xx`.
+7. Strictly output only the compressed V-SPR (no freeform prose).
 """,  # *https://github.com/daveshap/SparsePrimingRepresentations
         b64_image,
         img_type,
