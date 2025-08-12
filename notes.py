@@ -45,9 +45,9 @@ def process_file(
             # To read a FastAPI SpooledTemporaryFile (which is the underlying file object of an UploadFile) as text, the recommended approach is to use io.TextIOWrapper for proper encoding handling.
             return file.decode("utf-8")
         case "png":
-            return call_vlm(base64.b64encode(file).decode("utf-8"), "png")
+            return vlm_process_image(base64.b64encode(file).decode("utf-8"), "png")
         case "jpeg":
-            return call_vlm(base64.b64encode(file).decode("utf-8"), "jpeg")
+            return vlm_process_image(base64.b64encode(file).decode("utf-8"), "jpeg")
         case "pptx":
             slides = Presentation(BytesIO(file)).slides
 
@@ -60,7 +60,7 @@ def process_file(
                         slides_notes += (
                             "\n"
                             + "===IMAGE START==="
-                            + call_vlm(
+                            + vlm_process_image(
                                 base64.b64encode(shape.image.blob).decode("utf-8"),
                                 shape.image.content_type.replace("image/", ""),
                             )
@@ -99,7 +99,9 @@ def process_file(
 
                             docx_notes += (
                                 "\n===IMAGE START===\n"
-                                + call_vlm(b64_blob, content_type.replace("image/", ""))
+                                + vlm_process_image(
+                                    b64_blob, content_type.replace("image/", "")
+                                )
                                 + "\n===IMAGE END===\n"
                             )
 
@@ -120,7 +122,7 @@ def process_file(
                     ext = base_image["ext"]
                     pdf_notes += (
                         "\n===IMAGE START===\n"
-                        + call_vlm(b64_blob, ext)
+                        + vlm_process_image(b64_blob, ext)
                         + "\n===IMAGE END===\n"
                     )
             return pdf_notes
