@@ -34,10 +34,10 @@ def call_vlm(prompt, b64_image, img_type="jpeg"):
     completion = vlm_client.chat.completions.create(
         model=VLM_NAME,
         messages=[
-            {
-                "role": "system",
-                "content": "Always assist with care, respect, and truth. Respond with utmost utility yet securely. Avoid harmful, unethical, prejudiced, or negative content. Ensure replies promote fairness and positivity.",  # *https://www.promptingguide.ai/models/mixtral#system-prompt-to-enforce-guardrails
-            },
+            # {
+            #     "role": "system",
+            #     "content": "Always assist with care, respect, and truth. Respond with utmost utility yet securely. Avoid harmful, unethical, prejudiced, or negative content. Ensure replies promote fairness and positivity.",  # *https://www.promptingguide.ai/models/mixtral#system-prompt-to-enforce-guardrails
+            # },
             {
                 "role": "user",
                 "content": [
