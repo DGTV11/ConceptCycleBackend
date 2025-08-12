@@ -13,7 +13,13 @@ def vlm_process_image(b64_image, img_type):
     return call_vlm(
         """
 # MISSION
-Compress one image of school material (notes / slides / worksheet) into a token-efficient V-SPR that preserves title, ordered sections, key facts, equations (LaTeX), diagram relations, table sketch, and layout cues so another model can expand into detailed text notes.
+You are given an image of school material (notes / slides / worksheet) as input_image.
+
+Analyze the image thoroughly and compress its content into a token-efficient V-SPR that preserves title, ordered sections, key facts, equations (LaTeX), diagram relations, table sketch, and layout cues so another model can expand into detailed text notes.
+
+Use the image as your primary source of content.
+
+Please output only the compressed V-SPR with no freeform prose.
 
 # THEORY
 Visual school artifacts combine dense text, structure (headings, lists), equations, and schematic diagrams. A small set of canonical, confidence-scored assertions (headlines, ordered section entries, short triples for diagrams/tables, LaTeX for math) activates a downstream model to reliably reconstruct full notes while minimizing tokens.
@@ -31,7 +37,7 @@ Visual school artifacts combine dense text, structure (headings, lists), equatio
 5. Preserve layout cues that change meaning: underlines, bold, indentation, numberings, arrows; encode as `EMPH: underline/bold/indent` with confidence.
 6. Mark uncertain tokens inline as `[?word]` and give numeric confidence per line (0.00–1.00). End output with `OVERALL_CONF: x.xx`.
 7. Strictly output only the compressed V-SPR (no freeform prose).
-""",  # *https://github.com/daveshap/SparsePrimingRepresentations
+""",
         b64_image,
         img_type,
     )
